@@ -4,8 +4,12 @@ import { jsonRpcProvider, StarknetConfig, voyager } from "@starknet-react/core";
 import { dojoConfig } from "../dojoConfig";
 import { usePredeployedAccounts } from "@dojoengine/predeployed-connector/react";
 
+// For local Katana development, we use predeployed accounts only
+// To enable Cartridge Controller for production, set VITE_USE_CONTROLLER=true
+const USE_CONTROLLER = import.meta.env.VITE_USE_CONTROLLER === "true";
+
 export default function StarknetProvider({ children }: PropsWithChildren) {
-    const { connectors } = usePredeployedAccounts({
+    const { connectors: predeployedConnectors } = usePredeployedAccounts({
         rpc: dojoConfig.rpcUrl as string,
         id: "katana",
         name: "Katana",
@@ -19,7 +23,7 @@ export default function StarknetProvider({ children }: PropsWithChildren) {
         <StarknetConfig
             chains={[mainnet]}
             provider={provider}
-            connectors={connectors}
+            connectors={predeployedConnectors}
             explorer={voyager}
             autoConnect
         >
