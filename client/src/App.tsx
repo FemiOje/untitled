@@ -1,9 +1,11 @@
+import { useState, useCallback } from "react";
 import { KeysClause, ToriiQueryBuilder } from "@dojoengine/sdk";
 
 import { useAccount } from "@starknet-react/core";
 import { useDojoSDK, useEntityId, useEntityQuery } from "@dojoengine/sdk/react";
 import "./App.css";
 import HexGrid from "./components/HexGrid";
+import type { HexPosition } from "./three/utils";
 
 function App() {
     const { useDojoStore, client } = useDojoSDK();
@@ -15,23 +17,46 @@ function App() {
     useEntityQuery(
         new ToriiQueryBuilder()
             .withClause(
-                // Querying Moves and Position models that has at least [account.address] as key
                 KeysClause([], [undefined], "VariableLen").build()
             )
             .includeHashedKeys()
     );
 
+    const [playerPosition, setPlayerPosition] = useState<HexPosition>({ col: 0, row: 0 });
+
+    const handleMove = useCallback((pos: HexPosition) => {
+        setPlayerPosition(pos);
+    }, []);
+
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 10, left: 10, zIndex: 1000, color: "white", background: "rgba(0,0,0,0.5)", padding: "10px", borderRadius: "5px" }}>
-                {/* <h1 style={{ margin: 0, fontSize: "18px" }}>Hexagonal Grid</h1> */}
-                {client ? (
-                    <p style={{ margin: "5px 0", fontSize: "12px" }}>✅ Dojo SDK initialized</p>
-                ) : (
-                    <p style={{ margin: "5px 0", fontSize: "12px" }}>❌ Dojo SDK failed</p>
-                )}
+            <div style={{
+                position: "absolute",
+                top: 16,
+                left: 16,
+                zIndex: 1000,
+                color: "#e0e0e0",
+                background: "rgba(10,10,30,0.8)",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                fontFamily: "monospace",
+                fontSize: "13px",
+                border: "1px solid rgba(255,255,255,0.1)",
+                pointerEvents: "none",
+            }}>
+                <div style={{ marginBottom: 4, fontWeight: 600, color: "#f5a623" }}>
+                    Position: ({playerPosition.col}, {playerPosition.row})
+                </div>
+                <div style={{ color: client ? "#44cc44" : "#ff4444" }}>
+                    {client ? "Connected" : "Disconnected"}
+                </div>
             </div>
-            <HexGrid width={10} height={10} />
+            <HexGrid
+                width={20}
+                height={20}
+                playerPosition={playerPosition}
+                onMove={handleMove}
+            />
         </div>
     );
 }
