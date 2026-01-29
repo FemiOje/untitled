@@ -1,0 +1,252 @@
+/**
+ * Game Store
+ *
+ * Zustand store for centralized game state management
+ * Following death-mountain pattern for state management
+ */
+
+import { create } from "zustand";
+import { Position, Moves, Vec2, Direction, GameEvent } from "@/types/game";
+import {
+  calculateNewPosition,
+  isValidPosition,
+  PositionHistory,
+  createDefaultPosition,
+} from "@/utils/position";
+import { isVec2Equal } from "@/types/game";
+
+interface GameState {
+  // Player identification
+  playerAddress: string | null;
+  isSpawned: boolean;
+
+  // Position state
+  position: Position | null;
+  positionHistory: PositionHistory;
+  optimisticPosition: Vec2 | null; // For optimistic updates
+
+  // Moves state
+  moves: Moves | null;
+
+  // Game events log
+  eventLog: GameEvent[];
+
+  // Loading states
+  isInitializing: boolean;
+  isSyncing: boolean;
+
+  // Actions - Player Management
+  setPlayerAddress: (address: string | null) => void;
+  setIsSpawned: (spawned: boolean) => void;
+
+  // Actions - Position Management
+  setPosition: (position: Position | null) => void;
+  updatePositionVec: (vec: Vec2) => void;
+  setOptimisticPosition: (vec: Vec2 | null) => void;
+  rollbackOptimisticPosition: () => void;
+
+  // Actions - Moves Management
+  setMoves: (moves: Moves | null) => void;
+  updateCanMove: (canMove: boolean) => void;
+  updateLastDirection: (direction: Direction | null) => void;
+
+  // Actions - Event Management
+  addEvent: (event: GameEvent) => void;
+  clearEventLog: () => void;
+
+  // Actions - State Management
+  setIsInitializing: (initializing: boolean) => void;
+  setIsSyncing: (syncing: boolean) => void;
+  resetGameState: () => void;
+
+  // Computed values
+  getCurrentPosition: () => Vec2 | null;
+  canPlayerMove: () => boolean;
+  getLastDirection: () => Direction | null;
+}
+
+export const useGameStore = create<GameState>((set, get) => ({
+  // Initial state
+  playerAddress: null,
+  isSpawned: false,
+  position: null,
+  positionHistory: new PositionHistory(50),
+  optimisticPosition: null,
+  moves: null,
+  eventLog: [],
+  isInitializing: false,
+  isSyncing: false,
+
+  // Player Management Actions
+  setPlayerAddress: (address: string | null) =>
+    set({ playerAddress: address }),
+
+  setIsSpawned: (spawned: boolean) => set({ isSpawned: spawned }),
+
+  // Position Management Actions
+  setPosition: (position: Position | null) =>
+    set((state) => {
+      // Add to history if position changed
+      if (position && position.vec) {
+        const currentVec = state.position?.vec;
+        if (!currentVec || !isVec2Equal(currentVec, position.vec)) {
+          state.positionHistory.push(position.vec);
+        }
+      }
+
+      return {
+        position,
+        optimisticPosition: null, // Clear optimistic update
+      };
+    }),
+
+  updatePositionVec: (vec: Vec2) =>
+    set((state) => {
+      if (!state.position) return state;
+
+      // Add to history
+      state.positionHistory.push(vec);
+
+      return {
+        position: {
+          ...state.position,
+          vec,
+        },
+        optimisticPosition: null,
+      };
+    }),
+
+  setOptimisticPosition: (vec: Vec2 | null) =>
+    set({ optimisticPosition: vec }),
+
+  rollbackOptimisticPosition: () => set({ optimisticPosition: null }),
+
+  // Moves Management Actions
+  setMoves: (moves: Moves | null) => set({ moves }),
+
+  updateCanMove: (canMove: boolean) =>
+    set((state) => {
+      if (!state.moves) return state;
+      return {
+        moves: {
+          ...state.moves,
+          can_move: canMove,
+        },
+      };
+    }),
+
+  updateLastDirection: (direction: Direction | null) =>
+    set((state) => {
+      if (!state.moves) return state;
+      return {
+        moves: {
+          ...state.moves,
+          last_direction: direction,
+        },
+      };
+    }),
+
+  // Event Management Actions
+  addEvent: (event: GameEvent) =>
+    set((state) => ({
+      eventLog: [event, ...state.eventLog].slice(0, 100), // Keep last 100 events
+    })),
+
+  clearEventLog: () => set({ eventLog: [] }),
+
+  // State Management Actions
+  setIsInitializing: (initializing: boolean) =>
+    set({ isInitializing: initializing }),
+
+  setIsSyncing: (syncing: boolean) => set({ isSyncing: syncing }),
+
+  resetGameState: () =>
+    set({
+      isSpawned: false,
+      position: null,
+      positionHistory: new PositionHistory(50),
+      optimisticPosition: null,
+      moves: null,
+      eventLog: [],
+      isInitializing: false,
+      isSyncing: false,
+    }),
+
+  // Computed values
+  getCurrentPosition: () => {
+    const state = get();
+    // Return optimistic position if it exists, otherwise return actual position
+    if (state.optimisticPosition) {
+      return state.optimisticPosition;
+    }
+    return state.position?.vec || null;
+  },
+
+  canPlayerMove: () => {
+    const state = get();
+    return state.moves?.can_move || false;
+  },
+
+  getLastDirection: () => {
+    const state = get();
+    return state.moves?.last_direction || null;
+  },
+}));
+
+/**
+ * Selector hooks for optimized re-renders
+ */
+
+export const usePlayerAddress = () =>
+  useGameStore((state) => state.playerAddress);
+
+export const useIsSpawned = () => useGameStore((state) => state.isSpawned);
+
+export const usePlayerPosition = () => useGameStore((state) => state.position);
+
+export const useCurrentPosition = () =>
+  useGameStore((state) => state.getCurrentPosition());
+
+export const usePlayerMoves = () => useGameStore((state) => state.moves);
+
+export const useCanPlayerMove = () =>
+  useGameStore((state) => state.canPlayerMove());
+
+export const useEventLog = () => useGameStore((state) => state.eventLog);
+
+export const useIsGameInitializing = () =>
+  useGameStore((state) => state.isInitializing);
+
+export const useIsGameSyncing = () =>
+  useGameStore((state) => state.isSyncing);
+
+/**
+ * Utility function to update position with optimistic update
+ * @param direction - Direction to move
+ * @returns Optimistic new position or null
+ */
+export const createOptimisticMove = (direction: Direction): Vec2 | null => {
+  const state = useGameStore.getState();
+  const currentPos = state.getCurrentPosition();
+
+  if (!currentPos) return null;
+
+  const newPos = calculateNewPosition(currentPos, direction);
+
+  // Validate position
+  if (!isValidPosition(newPos)) {
+    return null;
+  }
+
+  return newPos;
+};
+
+/**
+ * Helper to initialize player state
+ * @param address - Player address
+ */
+export const initializePlayerState = (address: string) => {
+  const store = useGameStore.getState();
+  store.setPlayerAddress(address);
+  store.resetGameState();
+};

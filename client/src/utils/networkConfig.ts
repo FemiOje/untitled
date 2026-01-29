@@ -76,3 +76,67 @@ export function getNetworkConfig(networkKey: ChainId): NetworkConfig {
 export function stringToFelt(str: string): string {
   return str ? shortString.encodeShortString(str) : "0x0";
 }
+
+/**
+ * Get contract by name from manifest following death-mountain pattern
+ * @param manifest - The Dojo manifest containing contract definitions
+ * @param namespace - The namespace to search within (e.g., "untitled")
+ * @param name - The contract name/tag to search for (e.g., "actions")
+ * @returns The contract object or undefined if not found
+ */
+export function getContractByName(
+  manifest: any,
+  namespace: string,
+  name: string
+): { address: string; classHash: string; tag: string } | undefined {
+  if (!manifest || !manifest.contracts) {
+    console.warn("Manifest or contracts not found");
+    return undefined;
+  }
+
+  // Search for contract by tag matching namespace-name pattern
+  const targetTag = `${namespace}-${name}`;
+  const contract = manifest.contracts.find((c: any) => c.tag === targetTag);
+
+  if (!contract) {
+    console.warn(`Contract "${targetTag}" not found in manifest`);
+    return undefined;
+  }
+
+  return {
+    address: contract.address,
+    classHash: contract.class_hash,
+    tag: contract.tag,
+  };
+}
+
+/**
+ * Helper to get contract address directly
+ * @param manifest - The Dojo manifest
+ * @param namespace - The namespace
+ * @param name - The contract name
+ * @returns The contract address or undefined
+ */
+export function getContractAddress(
+  manifest: any,
+  namespace: string,
+  name: string
+): string | undefined {
+  return getContractByName(manifest, namespace, name)?.address;
+}
+
+/**
+ * Get all system methods for a contract
+ * @param manifest - The Dojo manifest
+ * @param namespace - The namespace
+ * @param name - The contract name
+ * @returns Array of system method names
+ */
+export function getContractSystems(
+  manifest: any,
+  namespace: string,
+  name: string
+): string[] {
+  const contract = getContractByName(manifest, namespace, name);
+  return contract ? (manifest.contracts.find((c: any) => c.tag === contract.tag)?.systems || []) : [];
+}

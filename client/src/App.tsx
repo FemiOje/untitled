@@ -8,6 +8,7 @@ import HexGrid from "./components/HexGrid";
 import Header from "./components/Header";
 import type { HexPosition } from "./three/utils";
 import { ControllerProvider } from "./contexts/controller";
+import { GameDirectorProvider } from "./contexts/GameDirector";
 
 const theme = createTheme({
     palette: {
@@ -45,35 +46,37 @@ function App() {
     return (
         <ThemeProvider theme={theme}>
             <ControllerProvider>
-                <div style={{ width: "100%", height: "100vh", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                    <Header />
-                    <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-                        <div style={{
-                            position: "absolute",
-                            top: 16,
-                            left: 16,
-                            zIndex: 1000,
-                            color: "#e0e0e0",
-                            background: "rgba(10,10,30,0.8)",
-                            padding: "12px 16px",
-                            borderRadius: "8px",
-                            fontFamily: "monospace",
-                            fontSize: "13px",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            pointerEvents: "none",
-                        }}>
-                            <div style={{ marginBottom: 4, fontWeight: 600, color: "#f5a623" }}>
-                                Position: ({playerPosition.col}, {playerPosition.row})
+                <GameDirectorProvider>
+                    <div style={{ width: "100%", height: "100vh", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                        <Header />
+                        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+                            <div style={{
+                                position: "absolute",
+                                top: 16,
+                                left: 16,
+                                zIndex: 1000,
+                                color: "#e0e0e0",
+                                background: "rgba(10,10,30,0.8)",
+                                padding: "12px 16px",
+                                borderRadius: "8px",
+                                fontFamily: "monospace",
+                                fontSize: "13px",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                pointerEvents: "none",
+                            }}>
+                                <div style={{ marginBottom: 4, fontWeight: 600, color: "#f5a623" }}>
+                                    Position: ({playerPosition.col}, {playerPosition.row})
+                                </div>
                             </div>
+                            <HexGrid
+                                width={20}
+                                height={20}
+                                playerPosition={playerPosition}
+                                onMove={handleMove}
+                            />
                         </div>
-                        <HexGrid
-                            width={20}
-                            height={20}
-                            playerPosition={playerPosition}
-                            onMove={handleMove}
-                        />
                     </div>
-                </div>
+                </GameDirectorProvider>
             </ControllerProvider>
         </ThemeProvider>
     );

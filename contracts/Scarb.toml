@@ -7,7 +7,15 @@ edition = "2024_07"
 sierra-replace-ids = true
 
 [scripts]
-migrate = "PROFILE=sepolia && sozo -P $PROFILE clean && sozo -P $PROFILE build && sozo -P $PROFILE migrate && cp ./manifest_sepolia.json ../client/src/manifests/manifest_sepolia.json && sozo -P $PROFILE inspect"
+build = "PROFILE=sepolia && sozo -P $PROFILE clean && sozo -P $PROFILE build --typescript"
+copy-bindings = "cp -r ./bindings/typescript/* ../client/src/typescript/"
+deploy = "PROFILE=sepolia && sozo -P $PROFILE migrate && cp ./manifest_sepolia.json ../client/src/manifests/manifest_sepolia.json"
+inspect = "PROFILE=sepolia && sozo -P $PROFILE inspect"
+
+# build + copy bindings + deploy + inspect
+migrate = "scarb run build && scarb run copy-bindings && scarb run deploy && scarb run inspect"
+
+# example calls
 spawn = "PROFILE=sepolia && sozo -P $PROFILE execute untitled-actions spawn --wait"
 move = "PROFILE=sepolia && sozo -P $PROFILE execute untitled-actions move 1 --wait"
 

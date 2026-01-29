@@ -1,0 +1,124 @@
+/**
+ * Game Types
+ *
+ * TypeScript interfaces matching Cairo contract models from contracts/src/models.cairo
+ */
+
+/**
+ * Direction enum matching Cairo Direction model
+ * Represents 6 possible movement directions on a pointy-top hexagonal grid
+ */
+export enum Direction {
+  East = 1,       // E:  (+1,  0)
+  NorthEast = 2,  // NE: (+1, -1)
+  NorthWest = 3,  // NW: ( 0, -1)
+  West = 4,       // W:  (-1,  0)
+  SouthWest = 5,  // SW: (-1, +1)
+  SouthEast = 6,  // SE: ( 0, +1)
+}
+
+/**
+ * Vec2 - 2D coordinate vector matching Cairo Vec2 model
+ */
+export interface Vec2 {
+  x: number;
+  y: number;
+}
+
+/**
+ * Position model - Player's position on the hex grid
+ */
+export interface Position {
+  player: string;  // ContractAddress as hex string
+  vec: Vec2;
+}
+
+/**
+ * Moves model - Player movement state
+ */
+export interface Moves {
+  player: string;  // ContractAddress as hex string
+  last_direction: Direction | null;  // Option<Direction> in Cairo
+  can_move: boolean;
+}
+
+/**
+ * DirectionsAvailable model - Available movement directions for player
+ */
+export interface DirectionsAvailable {
+  player: string;  // ContractAddress as hex string
+  directions: Direction[];
+}
+
+/**
+ * PositionCount model - Tracking positions
+ */
+export interface PositionCount {
+  identity: string;  // ContractAddress as hex string
+  position: Array<[number, bigint]>;  // Span<(u8, u128)> in Cairo
+}
+
+/**
+ * Game Event types for event processing
+ */
+export interface GameEvent {
+  type: 'spawned' | 'moved' | 'position_update' | 'unknown';
+  player?: string;
+  position?: Position;
+  direction?: Direction;
+  moves?: Moves;
+}
+
+/**
+ * Game Action types for user actions
+ */
+export interface GameAction {
+  type: 'spawn' | 'move';
+  direction?: Direction;
+}
+
+/**
+ * Helper function to convert Direction enum to felt252 value
+ * Matches Cairo DirectionIntoFelt252 impl
+ */
+export function directionToFelt(direction: Direction): number {
+  return direction;
+}
+
+/**
+ * Helper function to convert Direction to string
+ */
+export function directionToString(direction: Direction): string {
+  switch (direction) {
+    case Direction.East:
+      return "East";
+    case Direction.NorthEast:
+      return "NorthEast";
+    case Direction.NorthWest:
+      return "NorthWest";
+    case Direction.West:
+      return "West";
+    case Direction.SouthWest:
+      return "SouthWest";
+    case Direction.SouthEast:
+      return "SouthEast";
+    default:
+      return "Unknown";
+  }
+}
+
+/**
+ * Helper function to check if Vec2 is zero
+ * Matches Cairo Vec2Trait::is_zero
+ */
+export function isVec2Zero(vec: Vec2): boolean {
+  return vec.x === 0 && vec.y === 0;
+}
+
+/**
+ * Helper function to check if two Vec2 are equal
+ * Matches Cairo Vec2Trait::is_equal
+ */
+export function isVec2Equal(a: Vec2, b: Vec2): boolean {
+  return a.x === b.x && a.y === b.y;
+}
