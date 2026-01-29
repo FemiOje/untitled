@@ -1,17 +1,40 @@
 import WalletConnect from "./WalletConnect";
+import { Box, Typography } from '@mui/material';
 
 function Header() {
   return (
-    <header className="w-full h-[50px] border-b-2 border-gray-800 bg-black flex items-center justify-between px-4">
-      <div className="flex items-center gap-2">
-        <h1 className="text-white text-lg font-semibold">Untitled Game</h1>
-      </div>
+    <Box sx={styles.header}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+          Untitled
+        </Typography>
+      </Box>
 
-      <div className="flex items-center gap-4">
+      <Box sx={styles.headerButtons}>
         <WalletConnect />
-      </div>
-    </header>
+      </Box>
+    </Box>
   );
 }
 
 export default Header;
+
+const styles = {
+  header: {
+    width: '100%',
+    height: '50px',
+    borderBottom: '2px solid rgba(17, 17, 17, 1)',
+    background: 'black',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    boxSizing: 'border-box',
+    px: '10px'
+  },
+  headerButtons: {
+    display: 'flex',
+    height: '36px',
+    alignItems: 'center',
+    gap: 2
+  }
+};

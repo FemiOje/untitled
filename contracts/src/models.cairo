@@ -5,7 +5,6 @@ use starknet::ContractAddress;
 pub struct Moves {
     #[key]
     pub player: ContractAddress,
-    pub remaining: u8,
     pub last_direction: Option<Direction>,
     pub can_move: bool,
 }
@@ -37,10 +36,12 @@ pub struct PositionCount {
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub enum Direction {
     #[default]
-    Left,
-    Right,
-    Up,
-    Down,
+    East,       // E:  (+1,  0)
+    NorthEast,  // NE: (+1, -1)
+    NorthWest,  // NW: ( 0, -1)
+    West,       // W:  (-1,  0)
+    SouthWest,  // SW: (-1, +1)
+    SouthEast,  // SE: ( 0, +1)
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked, Debug, DojoStore)]
@@ -53,10 +54,12 @@ pub struct Vec2 {
 impl DirectionIntoFelt252 of Into<Direction, felt252> {
     fn into(self: Direction) -> felt252 {
         match self {
-            Direction::Left => 1,
-            Direction::Right => 2,
-            Direction::Up => 3,
-            Direction::Down => 4,
+            Direction::East => 1,
+            Direction::NorthEast => 2,
+            Direction::NorthWest => 3,
+            Direction::West => 4,
+            Direction::SouthWest => 5,
+            Direction::SouthEast => 6,
         }
     }
 }

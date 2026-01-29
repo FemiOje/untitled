@@ -1,0 +1,17 @@
+# Contracts
+contracts/target
+contracts/torii.db
+contracts/KATANA.toml
+contracts/manifests
+contracts/deployments
+
+# Environment variables
+.env
+.env.local
+*.env.bak
+
+# OS files
+.DS_Store
+
+# Account files
+argent_account_*.json

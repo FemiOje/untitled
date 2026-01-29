@@ -6,13 +6,14 @@ mod tests {
         ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
         spawn_test_world,
     };
-    use dojo_starter::models::{Direction, Moves, Position, m_Moves, m_Position};
-    use dojo_starter::systems::actions::{IActionsDispatcher, IActionsDispatcherTrait, actions};
+    use untitled::models::{Direction, Moves, Position, Vec2, m_Moves, m_Position};
+    use untitled::systems::actions::{IActionsDispatcher, IActionsDispatcherTrait, actions};
+    use untitled::utils::hex::{get_neighbor, is_within_bounds};
     use starknet::ContractAddress;
 
     fn namespace_def() -> NamespaceDef {
         let ndef = NamespaceDef {
-            namespace: "dojo_starter",
+            namespace: "untitled",
             resources: [
                 TestResource::Model(m_Position::TEST_CLASS_HASH),
                 TestResource::Model(m_Moves::TEST_CLASS_HASH),
@@ -27,8 +28,8 @@ mod tests {
 
     fn contract_defs() -> Span<ContractDef> {
         [
-            ContractDefTrait::new(@"dojo_starter", @"actions")
-                .with_writer_of([dojo::utils::bytearray_hash(@"dojo_starter")].span())
+            ContractDefTrait::new(@"untitled", @"actions")
+                .with_writer_of([dojo::utils::bytearray_hash(@"untitled")].span())
         ]
             .span()
     }
@@ -64,9 +65,66 @@ mod tests {
         assert(position.vec.x == 0 && position.vec.y == 0, 'erase_model failed');
     }
 
+    // Test hex movement utility functions
+    #[test]
+    fn test_hex_movement_east() {
+        let pos = Vec2 { x: 5, y: 5 };
+        let next = get_neighbor(pos, Direction::East);
+        assert(next.x == 6, 'East q failed');
+        assert(next.y == 5, 'East r failed');
+    }
+
+    #[test]
+    fn test_hex_movement_northeast() {
+        let pos = Vec2 { x: 5, y: 5 };
+        let next = get_neighbor(pos, Direction::NorthEast);
+        assert(next.x == 6, 'NE q failed');
+        assert(next.y == 4, 'NE r failed');
+    }
+
+    #[test]
+    fn test_hex_movement_northwest() {
+        let pos = Vec2 { x: 5, y: 5 };
+        let next = get_neighbor(pos, Direction::NorthWest);
+        assert(next.x == 5, 'NW q failed');
+        assert(next.y == 4, 'NW r failed');
+    }
+
+    #[test]
+    fn test_hex_movement_west() {
+        let pos = Vec2 { x: 5, y: 5 };
+        let next = get_neighbor(pos, Direction::West);
+        assert(next.x == 4, 'West q failed');
+        assert(next.y == 5, 'West r failed');
+    }
+
+    #[test]
+    fn test_hex_movement_southwest() {
+        let pos = Vec2 { x: 5, y: 5 };
+        let next = get_neighbor(pos, Direction::SouthWest);
+        assert(next.x == 4, 'SW q failed');
+        assert(next.y == 6, 'SW r failed');
+    }
+
+    #[test]
+    fn test_hex_movement_southeast() {
+        let pos = Vec2 { x: 5, y: 5 };
+        let next = get_neighbor(pos, Direction::SouthEast);
+        assert(next.x == 5, 'SE q failed');
+        assert(next.y == 6, 'SE r failed');
+    }
+
+    #[test]
+    fn test_boundary_validation() {
+        assert(is_within_bounds(Vec2 { x: 0, y: 0 }), 'Origin failed');
+        assert(is_within_bounds(Vec2 { x: 9, y: 9 }), 'Max corner failed');
+        assert(!is_within_bounds(Vec2 { x: 10, y: 5 }), 'Out q failed');
+        assert(!is_within_bounds(Vec2 { x: 5, y: 10 }), 'Out r failed');
+    }
+
     #[test]
     #[available_gas(30000000)]
-    fn test_move() {
+    fn test_spawn() {
         let caller: ContractAddress = 0.try_into().unwrap();
 
         let ndef = namespace_def();
@@ -77,23 +135,90 @@ mod tests {
         let actions_system = IActionsDispatcher { contract_address };
 
         actions_system.spawn();
-        let initial_moves: Moves = world.read_model(caller);
-        let initial_position: Position = world.read_model(caller);
 
-        assert(
-            initial_position.vec.x == 10 && initial_position.vec.y == 10, 'wrong initial position',
-        );
-
-        actions_system.move(Direction::Right.into());
+        let position: Position = world.read_model(caller);
+        assert(is_within_bounds(position.vec), 'Spawn out of bounds');
 
         let moves: Moves = world.read_model(caller);
-        let right_dir_felt: felt252 = Direction::Right.into();
+        assert(moves.can_move, 'Cannot move');
+    }
 
-        assert(moves.remaining == initial_moves.remaining - 1, 'moves is wrong');
-        assert(moves.last_direction.unwrap().into() == right_dir_felt, 'last direction is wrong');
+    #[test]
+    #[available_gas(30000000)]
+    fn test_move_east() {
+        let caller: ContractAddress = 0.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        actions_system.spawn();
+        let initial_position: Position = world.read_model(caller);
+
+        actions_system.move(Direction::East);
+
+        let moves: Moves = world.read_model(caller);
+        let east_dir_felt: felt252 = Direction::East.into();
+
+        assert(moves.last_direction.unwrap().into() == east_dir_felt, 'last direction is wrong');
 
         let new_position: Position = world.read_model(caller);
-        assert(new_position.vec.x == initial_position.vec.x + 1, 'position x is wrong');
-        assert(new_position.vec.y == initial_position.vec.y, 'position y is wrong');
+        assert(new_position.vec.x == initial_position.vec.x + 1, 'position q is wrong');
+        assert(new_position.vec.y == initial_position.vec.y, 'position r is wrong');
     }
+
+    #[test]
+    #[available_gas(30000000)]
+    fn test_move_northeast() {
+        let caller: ContractAddress = 0.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        actions_system.spawn();
+        let initial_position: Position = world.read_model(caller);
+
+        actions_system.move(Direction::NorthEast);
+
+        let new_position: Position = world.read_model(caller);
+        assert(new_position.vec.x == initial_position.vec.x + 1, 'position q is wrong');
+        assert(new_position.vec.y == initial_position.vec.y - 1, 'position r is wrong');
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    #[should_panic(expected: ('Move out of bounds', 'ENTRYPOINT_FAILED'))]
+    fn test_move_out_of_bounds() {
+        let caller: ContractAddress = 0.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        let edge_position = Position {
+            player: caller,
+            vec: Vec2 { x: 9, y: 5 }
+        };
+        world.write_model_test(@edge_position);
+
+        let moves = Moves {
+            player: caller,
+            last_direction: Option::None,
+            can_move: true,
+        };
+        world.write_model_test(@moves);
+
+        actions_system.move(Direction::East);
+    }
+
 }
