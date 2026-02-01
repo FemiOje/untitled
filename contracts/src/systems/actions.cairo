@@ -14,8 +14,16 @@ pub mod actions {
     use dojo::model::ModelStorage;
     use untitled::models::{Moves, Vec2};
     use untitled::utils::hex::{get_neighbor, is_within_bounds};
-    use starknet::{ContractAddress, get_caller_address};
+    use starknet::{ContractAddress, get_caller_address, get_tx_info, get_block_timestamp};
     use super::{Direction, IActions, Position};
+
+    #[derive(Copy, Drop, Serde)]
+    #[dojo::event]
+    pub struct Spawned {
+        #[key]
+        pub player: ContractAddress,
+        pub position: Vec2,
+    }
 
     #[derive(Copy, Drop, Serde)]
     #[dojo::event]
@@ -23,6 +31,7 @@ pub mod actions {
         #[key]
         pub player: ContractAddress,
         pub direction: Direction,
+        pub position: Vec2,
     }
 
     #[abi(embed_v0)]
@@ -32,9 +41,19 @@ pub mod actions {
 
             let player = get_caller_address();
 
-            // Spawn player at center of 10x10 hex grid (q=5, r=5)
+            // Currently using block timestamp + tx hash for randomness
+            // TODO: Switch to VRF for prod
+            let tx_info = get_tx_info().unbox();
+            let timestamp = get_block_timestamp();
+
+            // Combine entropy sources and derive coordinates
+            let seed: felt252 = timestamp.into() + tx_info.transaction_hash + player.into();
+            let seed_u256: u256 = seed.into();
+            let x: u32 = (seed_u256 % 10).try_into().unwrap();
+            let y: u32 = ((seed_u256 / 10) % 10).try_into().unwrap();
+
             let new_position = Position {
-                player, vec: Vec2 { x: 5, y: 5 },
+                player, vec: Vec2 { x, y },
             };
 
             world.write_model(@new_position);
@@ -46,6 +65,9 @@ pub mod actions {
                 can_move: true,
             };
             world.write_model(@moves);
+
+            // Emit spawn event with position
+            world.emit_event(@Spawned { player, position: new_position.vec });
         }
 
         fn move(ref self: ContractState, direction: Direction) {
@@ -56,15 +78,13 @@ pub mod actions {
             let position: Position = world.read_model(player);
             let mut moves: Moves = world.read_model(player);
             
-            if !moves.can_move {
-                return;
-            }
+            assert(moves.can_move, 'cannot move');
 
             // Calculate next position using hex math
             let next_vec = get_neighbor(position.vec, direction);
 
             // Validate bounds
-            assert(is_within_bounds(next_vec), 'Move out of bounds');
+            assert(is_within_bounds(next_vec), 'Move is out of bounds');
 
             // Update position
             let next = Position { player, vec: next_vec };
@@ -75,7 +95,7 @@ pub mod actions {
             world.write_model(@moves);
 
             // Emit event
-            world.emit_event(@Moved { player, direction });
+            world.emit_event(@Moved { player, direction, position: next_vec });
         }
     }
 

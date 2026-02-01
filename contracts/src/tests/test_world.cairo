@@ -9,7 +9,7 @@ mod tests {
     use untitled::models::{Direction, Moves, Position, Vec2, m_Moves, m_Position};
     use untitled::systems::actions::{IActionsDispatcher, IActionsDispatcherTrait, actions};
     use untitled::utils::hex::{get_neighbor, is_within_bounds};
-    use starknet::ContractAddress;
+    use starknet::{ContractAddress, testing};
 
     fn namespace_def() -> NamespaceDef {
         let ndef = NamespaceDef {
@@ -17,6 +17,7 @@ mod tests {
             resources: [
                 TestResource::Model(m_Position::TEST_CLASS_HASH),
                 TestResource::Model(m_Moves::TEST_CLASS_HASH),
+                TestResource::Event(actions::e_Spawned::TEST_CLASS_HASH),
                 TestResource::Event(actions::e_Moved::TEST_CLASS_HASH),
                 TestResource::Contract(actions::TEST_CLASS_HASH),
             ]
@@ -136,11 +137,51 @@ mod tests {
 
         actions_system.spawn();
 
+        // Verify position is within bounds (random spawn)
         let position: Position = world.read_model(caller);
         assert(is_within_bounds(position.vec), 'Spawn out of bounds');
+        assert(position.vec.x < 10, 'X coord out of range');
+        assert(position.vec.y < 10, 'Y coord out of range');
 
+        // Verify moves are initialized correctly
         let moves: Moves = world.read_model(caller);
         assert(moves.can_move, 'Cannot move');
+        assert(moves.last_direction.is_none(), 'Last direction should be None');
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    fn test_spawn_randomness() {
+        // Test that spawn positions can vary based on player address
+        // Note: In a deterministic test environment with same block,
+        // different player addresses should produce different positions
+        let caller1: ContractAddress = 1.try_into().unwrap();
+        let caller2: ContractAddress = 2.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        // Spawn first player
+        starknet::testing::set_contract_address(caller1);
+        actions_system.spawn();
+        let position1: Position = world.read_model(caller1);
+
+        // Spawn second player
+        starknet::testing::set_contract_address(caller2);
+        actions_system.spawn();
+        let position2: Position = world.read_model(caller2);
+
+        // Both positions should be valid
+        assert(is_within_bounds(position1.vec), 'Player 1 out of bounds');
+        assert(is_within_bounds(position2.vec), 'Player 2 out of bounds');
+
+        // Positions should differ (due to different player addresses in seed)
+        let same_position = position1.vec.x == position2.vec.x && position1.vec.y == position2.vec.y;
+        assert(!same_position, 'Positions should differ');
     }
 
     #[test]

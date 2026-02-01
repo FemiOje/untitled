@@ -37,6 +37,13 @@ export interface Vec2 {
 export interface Moved {
 	player: string;
 	direction: DirectionEnum;
+	position: Vec2;
+}
+
+// Type definition for `untitled::systems::actions::actions::Spawned` struct
+export interface Spawned {
+	player: string;
+	position: Vec2;
 }
 
 // Type definition for `untitled::models::Direction` enum
@@ -59,6 +66,7 @@ export interface SchemaType extends ISchemaType {
 		PositionCount: PositionCount,
 		Vec2: Vec2,
 		Moved: Moved,
+		Spawned: Spawned,
 	},
 }
 export const schema: SchemaType = {
@@ -99,6 +107,11 @@ export const schema: SchemaType = {
 				West: undefined,
 				SouthWest: undefined,
 				SouthEast: undefined, }),
+		position: { x: 0, y: 0, },
+		},
+		Spawned: {
+			player: "",
+		position: { x: 0, y: 0, },
 		},
 	},
 };
@@ -110,4 +123,5 @@ export enum ModelsMapping {
 	PositionCount = 'untitled-PositionCount',
 	Vec2 = 'untitled-Vec2',
 	Moved = 'untitled-Moved',
+	Spawned = 'untitled-Spawned',
 }

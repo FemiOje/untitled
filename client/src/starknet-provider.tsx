@@ -1,14 +1,18 @@
 import type { PropsWithChildren } from "react";
 import { mainnet, sepolia, Chain } from "@starknet-react/chains";
-import { jsonRpcProvider, StarknetConfig, cartridge } from "@starknet-react/core";
-import { ChainId, getNetworkConfig, NetworkConfig } from "@/utils/networkConfig";
+import {
+  jsonRpcProvider,
+  StarknetConfig,
+  cartridge,
+} from "@starknet-react/core";
+import {
+  ChainId,
+  getNetworkConfig,
+  NetworkConfig,
+} from "@/utils/networkConfig";
 import ControllerConnector from "@cartridge/connector/controller";
 import { AuthOptions } from "@cartridge/controller";
-import {
-  createContext,
-  useContext,
-  useState
-} from "react";
+import { createContext, useContext, useState } from "react";
 import { num, shortString, constants } from "starknet";
 
 interface DynamicConnectorContext {
@@ -140,7 +144,7 @@ const cartridgeController =
         signupOptions,
         namespace: controllerConfig.namespace,
         // slot: controllerConfig.slot,
-        preset: controllerConfig.preset,
+        // preset: controllerConfig.preset,
         tokens: {
           erc20: ["eth", "strk"],
         },
@@ -153,13 +157,16 @@ const provider = jsonRpcProvider({
   rpc: (chain: Chain) => {
     if (chain.id === sepolia.id) {
       return {
-        nodeUrl: controllerConfig.chainId === ChainId.SN_SEPOLIA
-          ? controllerConfig.rpcUrl
-          : "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9"
+        nodeUrl:
+          controllerConfig.chainId === ChainId.SN_SEPOLIA
+            ? controllerConfig.rpcUrl
+            : "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9",
       };
     }
     if (chain.id === mainnet.id) {
-      return { nodeUrl: "https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9" };
+      return {
+        nodeUrl: "https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9",
+      };
     }
     if (localKatanaChain && chain.id === localKatanaChain.id) {
       return { nodeUrl: controllerConfig.rpcUrl };
@@ -188,7 +195,7 @@ export function DynamicConnectorProvider({ children }: PropsWithChildren) {
       }}
     >
       <StarknetConfig
-        autoConnect={false}
+        autoConnect={true}
         defaultChainId={getDefaultChainId(currentNetworkConfig.chainId)}
         chains={starknetConfigChains}
         connectors={cartridgeController ? [cartridgeController] : []}

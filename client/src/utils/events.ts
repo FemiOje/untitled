@@ -5,66 +5,120 @@
  * Following death-mountain pattern for event processing
  */
 
-import { GameEvent, Direction, Position, Moves } from "@/types/game";
+import { GameEvent, Direction } from "@/types/game";
 import { debugLog } from "./helpers";
 
 /**
+ * Parse Vec2 from event data
+ * @param data - Event data array
+ * @param offset - Starting offset in data array
+ * @returns Parsed Vec2 object
+ */
+function parseVec2(data: string[], offset: number): { x: number; y: number } {
+  return {
+    x: parseInt(data[offset] || "0", 16),
+    y: parseInt(data[offset + 1] || "0", 16),
+  };
+}
+
+/**
  * Process raw game event from contract
- * Translates contract events into typed GameEvent objects
+ * Parses Dojo events using proper selector matching
  *
- * @param event - Raw event from contract
+ * Dojo StoreSetRecord event structure:
+ * - keys[0] = StoreSetRecord selector (world emit marker)
+ * - keys[1] = Event selector hash
+ * - keys[2] = Namespace hash
+ * - keys[3] = Entity selector
+ * - data[0] = Number of keys (n)
+ * - data[1..n] = Key values (e.g., player address)
+ * - data[n+1] = Number of values (m)
+ * - data[n+2..n+m+1] = Value fields (e.g., Vec2 x, y)
+ *
+ * @param event - Raw event from transaction receipt
+ * @param manifest - Contract manifest for event lookup
  * @returns Typed GameEvent object
  */
-export function processGameEvent(event: any): GameEvent {
+export function processGameEvent(event: any, manifest: any): GameEvent {
   try {
-    // Handle different event structures
-    const eventData = event.data || event;
-    const eventKeys = event.keys || [];
-
-    // Determine event type from keys or data structure
-    if (!eventData || typeof eventData !== "object") {
+    if (!event || !event.keys || event.keys.length < 2) {
       return { type: "unknown" };
     }
 
-    // Check for spawned event
-    if (eventData.type === "spawned" || eventKeys.includes("spawned")) {
+    const eventSelector = event.keys[1];
+    const data = event.data || [];
+
+    // Find event definition in manifest
+    const eventDef = manifest?.events?.find(
+      (def: any) => def.selector === eventSelector
+    );
+
+    if (!eventDef) {
+      debugLog("Event selector not found in manifest:", eventSelector);
+      return { type: "unknown" };
+    }
+
+    // Extract event name from tag (e.g., "dojo_starter-Spawned" -> "Spawned")
+    const eventName = eventDef?.tag?.split("-")[1]?.toLowerCase();
+
+    // Parse Dojo StoreSetRecord data format
+    // data[0] = number of keys
+    const numKeys = parseInt(data[0] || "0", 16);
+    // data[1..numKeys] = key values
+    const player = data[1]; // First key is always player address
+    // data[numKeys + 1] = number of values
+    const numValues = parseInt(data[numKeys + 1] || "0", 16);
+    // data[numKeys + 2..] = value fields
+    const valueOffset = numKeys + 2;
+
+    debugLog("Parsing event:", {
+      eventName,
+      selector: eventSelector,
+      numKeys,
+      numValues,
+      player,
+      data,
+    });
+
+    // Parse Spawned event
+    // Values: Vec2 { x, y }
+    if (eventName === "spawned") {
+      const vec = parseVec2(data, valueOffset);
+
+      debugLog("Parsed Spawned event:", { player, vec });
+
       return {
         type: "spawned",
-        player: eventData.player || eventKeys[1],
-        position: eventData.position
-          ? {
-              player: eventData.player,
-              vec: {
-                x: eventData.position.x || 0,
-                y: eventData.position.y || 0,
-              },
-            }
-          : undefined,
+        player,
+        position: {
+          player,
+          vec,
+        },
       };
     }
 
-    // Check for moved event
-    if (eventData.type === "moved" || eventKeys.includes("moved")) {
+    // Parse Moved event
+    // Values: Direction, Vec2 { x, y }
+    if (eventName === "moved") {
+      const direction = parseInt(data[valueOffset] || "0", 16) as Direction;
+      const vec = parseVec2(data, valueOffset + 1);
+
+      debugLog("Parsed Moved event:", { player, direction, vec });
+
       return {
         type: "moved",
-        player: eventData.player || eventKeys[1],
-        direction: eventData.direction as Direction,
-        position: eventData.position,
-      };
-    }
-
-    // Check for position update
-    if (eventData.type === "position_update" || eventData.position) {
-      return {
-        type: "position_update",
-        player: eventData.player,
-        position: eventData.position,
+        player,
+        direction,
+        position: {
+          player,
+          vec,
+        },
       };
     }
 
     return { type: "unknown" };
   } catch (error) {
-    console.error("Error processing game event:", error);
+    console.error("Error processing game event:", error, event);
     return { type: "unknown" };
   }
 }
@@ -86,14 +140,8 @@ export function translateGameEvent(
       return null;
     }
 
-    // Extract event selector (first key)
-    const eventSelector = event.keys[0];
-
-    // Parse event data based on selector
-    // This would match against known event selectors from the manifest
-    // For now, we'll use a simple approach based on data structure
-
-    const processedEvent = processGameEvent(event);
+    // Process the event with manifest for proper parsing
+    const processedEvent = processGameEvent(event, manifest);
 
     if (processedEvent.type !== "unknown") {
       debugLog("Translated event:", processedEvent);

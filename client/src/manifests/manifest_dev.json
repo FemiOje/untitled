@@ -143,6 +143,23 @@
       "class_hash": "0x1dc24a2235f0735e79b159a1ec312001651aee14281446b703b76b17b5dcf0c",
       "tag": "dojo_starter-Moved",
       "selector": "0x504403e5c02b6442527721fc464d9ea5fc8f1ee600ab5ccd5c0845d36fd45f1"
+    },
+    {
+      "members": [
+        {
+          "name": "player",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "position",
+          "type": "untitled::models::Vec2",
+          "key": false
+        }
+      ],
+      "class_hash": "0x0",
+      "tag": "dojo_starter-Spawned",
+      "selector": "0x605c289def37e955438c94eed7dbf8a31675e098ae1bd2a9ee000630e22df7b"
     }
   ],
   "external_contracts": [],

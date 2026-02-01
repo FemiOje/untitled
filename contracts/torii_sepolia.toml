@@ -1,6 +1,6 @@
-rpc = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/BjyQOCq-LbYdwm4__atrb"
-# rpc = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8"
-world_address = "0x0436c847e421d5bd5d892d0950753dd169fc0df0539aea4631ed1a8e2a473dcd"
+# rpc = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/BjyQOCq-LbYdwm4__atrb"
+rpc = "https://api.cartridge.gg/x/starknet/sepolia"
+world_address = "0x05894380a511044d8546d34a4158a323fc135fbbd2d09ebee37e29e890f030e9"
 
 [indexing]
 contracts = [

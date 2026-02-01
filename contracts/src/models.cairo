@@ -45,7 +45,7 @@ pub enum Direction {
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked, Debug, DojoStore)]
-pub struct Vec2 {
+pub struct Vec2 { // TODO(critical): negative coords implementation
     pub x: u32,
     pub y: u32,
 }

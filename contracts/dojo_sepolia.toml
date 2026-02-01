@@ -4,7 +4,7 @@ description = "literally untitled"
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "dojo_starter1"
+seed = "dojo_starter2"
 
 [world.socials]
 x = "https://x.com/0xjinius"
@@ -17,7 +17,7 @@ default = "untitled"
 
 [env]
 rpc_url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/BjyQOCq-LbYdwm4__atrb"
-world_address = "0x05894380a511044d8546d34a4158a323fc135fbbd2d09ebee37e29e890f030e9"
+world_address = "0x0051fd13953e7ae4e654dd931ba31f706e944cc1d37ca8e6ba4d7fb8a56b3a8c"
 account_address = "0x04033264fbcf087ee31b5940908e53956aa718a16fa1e6a51df778be45502c55"
 keystore_path = "./deployments/keystore.json"
 

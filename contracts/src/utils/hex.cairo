@@ -2,7 +2,6 @@ use untitled::models::{Direction, Vec2};
 
 /// Get neighbor hex in axial coordinates (pointy-top orientation)
 /// Axial system: q (x-axis), r (y-axis)
-/// No even/odd row logic needed!
 pub fn get_neighbor(position: Vec2, direction: Direction) -> Vec2 {
     let q = position.x;
     let r = position.y;
