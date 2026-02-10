@@ -3,21 +3,25 @@ import { useNavigate } from "react-router-dom";
 import { KeysClause, ToriiQueryBuilder } from "@dojoengine/sdk";
 // import { useAccount } from "@starknet-react/core";
 import { useEntityQuery } from "@dojoengine/sdk/react";
+import { Button } from "@mui/material";
 import HexGrid from "../components/HexGrid";
 import Header from "../components/Header";
 import type { HexPosition } from "../three/utils";
-import { useCurrentPosition, useIsSpawned, useCanPlayerMove } from "../stores/gameStore";
+import { useCurrentPosition, useIsSpawned, useCanPlayerMove, usePlayerMoves } from "../stores/gameStore";
 import { useGameActions } from "../dojo/useGameActions";
+import { useGameDirector } from "../contexts/GameDirector";
 import { vec2ToHexPosition, calculateDirection } from "../utils/coordinateMapping";
 
 export default function GamePage() {
     const navigate = useNavigate();
-    // const { account } = useAccount();
+    const { refreshGameState } = useGameDirector();
 
+    // Query all entities - for debugging/overview
+    // Note: This can be expensive, use specific queries in production
     useEntityQuery(
         new ToriiQueryBuilder()
             .withClause(
-                KeysClause([], [undefined], "VariableLen").build()
+                KeysClause([], [], "VariableLen").build()
             )
             .includeHashedKeys()
     );
@@ -26,13 +30,35 @@ export default function GamePage() {
     const blockchainPosition = useCurrentPosition();
     const isSpawned = useIsSpawned();
     const canMove = useCanPlayerMove();
+    const moves = usePlayerMoves();
     const { handleMove: handleBlockchainMove, isLoading } = useGameActions();
 
-    // Redirect to start page if not spawned
+    // Manual refresh handler
+    const handleRefresh = useCallback(async () => {
+        console.log("🔄 Manual refresh triggered");
+        await refreshGameState();
+    }, [refreshGameState]);
+
     useEffect(() => {
-        if (!isSpawned && !isLoading) {
-            navigate("/");
-        }
+        console.log("GamePage state:", {
+            isSpawned,
+            blockchainPosition,
+            canMove,
+            moves,
+            isLoading
+        });
+    }, [isSpawned, blockchainPosition, canMove, moves, isLoading]);
+
+    // Redirect to start page if not spawned (with delay to allow for sync)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!isSpawned && !isLoading) {
+                console.log("Player not spawned after timeout, redirecting to start page...");
+                navigate("/");
+            }
+        }, 2000); // Wait 2 seconds for state to sync
+
+        return () => clearTimeout(timer);
     }, [isSpawned, isLoading, navigate]);
 
     // Convert blockchain Vec2 to HexPosition for display
@@ -42,8 +68,20 @@ export default function GamePage() {
 
     // Handle move from HexGrid
     const handleMove = useCallback((targetPos: HexPosition) => {
-        if (!blockchainPosition || !canMove) {
-            console.warn("Cannot move: player not spawned or cannot move yet");
+        console.log("Move attempt:", {
+            targetPos,
+            blockchainPosition,
+            canMove,
+            isSpawned
+        });
+
+        if (!blockchainPosition) {
+            console.warn("Cannot move: player position not available");
+            return;
+        }
+
+        if (!canMove) {
+            console.warn("Cannot move: waiting for cooldown");
             return;
         }
 
@@ -56,13 +94,22 @@ export default function GamePage() {
             return;
         }
 
+        console.log("Executing move:", { currentHexPos, targetPos, direction });
+
         // Execute blockchain move
         handleBlockchainMove(direction);
-    }, [blockchainPosition, canMove, handleBlockchainMove]);
+    }, [blockchainPosition, canMove, handleBlockchainMove, isSpawned]);
 
-    // Don't render game if not spawned
-    if (!isSpawned) {
-        return null;
+    // Show loading state while waiting for blockchain sync
+    if (!isSpawned || !blockchainPosition) {
+        return (
+            <div style={{ width: "100%", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #0a0a1e 0%, #1a1a3e 50%, #0a0a1e 100%)" }}>
+                <div style={{ textAlign: "center", color: "#e0e0e0" }}>
+                    <div style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Loading game state...</div>
+                    <div style={{ fontSize: "0.9rem", color: "#aaa" }}>Syncing with blockchain</div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -82,14 +129,32 @@ export default function GamePage() {
                     fontFamily: "monospace",
                     fontSize: "13px",
                     border: "1px solid rgba(255,255,255,0.1)",
-                    pointerEvents: "none",
+                    pointerEvents: "auto",
                 }}>
                     <div style={{ marginBottom: 4, fontWeight: 600, color: "#f5a623" }}>
                         Position: ({playerPosition.col}, {playerPosition.row})
                     </div>
-                    <div style={{ fontSize: 11, color: "#aaa" }}>
+                    <div style={{ fontSize: 11, color: "#aaa", marginBottom: 8 }}>
                         Can Move: {canMove ? "Yes" : "Wait..."}
                     </div>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleRefresh}
+                        sx={{
+                            fontSize: "0.7rem",
+                            padding: "4px 8px",
+                            minWidth: "auto",
+                            borderColor: "rgba(66, 133, 244, 0.5)",
+                            color: "#4285f4",
+                            "&:hover": {
+                                borderColor: "#4285f4",
+                                backgroundColor: "rgba(66, 133, 244, 0.1)",
+                            }
+                        }}
+                    >
+                        Refresh State
+                    </Button>
                 </div>
 
                 <HexGrid

@@ -6,15 +6,16 @@
 
 /**
  * Direction enum matching Cairo Direction model
+ * IMPORTANT: Uses 0-based indexing to match Cairo's default enum serialization
  * Represents 6 possible movement directions on a pointy-top hexagonal grid
  */
 export enum Direction {
-  East = 1,       // E:  (+1,  0)
-  NorthEast = 2,  // NE: (+1, -1)
-  NorthWest = 3,  // NW: ( 0, -1)
-  West = 4,       // W:  (-1,  0)
-  SouthWest = 5,  // SW: (-1, +1)
-  SouthEast = 6,  // SE: ( 0, +1)
+  East = 0,       // E:  (+1,  0)
+  NorthEast = 1,  // NE: (+1, -1)
+  NorthWest = 2,  // NW: ( 0, -1)
+  West = 3,       // W:  (-1,  0)
+  SouthWest = 4,  // SW: (-1, +1)
+  SouthEast = 5,  // SE: ( 0, +1)
 }
 
 /**

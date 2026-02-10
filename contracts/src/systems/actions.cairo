@@ -49,8 +49,10 @@ pub mod actions {
             // Combine entropy sources and derive coordinates
             let seed: felt252 = timestamp.into() + tx_info.transaction_hash + player.into();
             let seed_u256: u256 = seed.into();
-            let x: u32 = (seed_u256 % 10).try_into().unwrap();
-            let y: u32 = ((seed_u256 / 10) % 10).try_into().unwrap();
+            let x_u32: u32 = (seed_u256 % 10).try_into().unwrap();
+            let y_u32: u32 = ((seed_u256 / 10) % 10).try_into().unwrap();
+            let x: i32 = x_u32.try_into().unwrap();
+            let y: i32 = y_u32.try_into().unwrap();
 
             let new_position = Position {
                 player, vec: Vec2 { x, y },

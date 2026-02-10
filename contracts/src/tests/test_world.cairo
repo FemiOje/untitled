@@ -223,19 +223,30 @@ mod tests {
         let (contract_address, _) = world.dns(@"actions").unwrap();
         let actions_system = IActionsDispatcher { contract_address };
 
-        actions_system.spawn();
-        let initial_position: Position = world.read_model(caller);
+        // Set safe starting position to avoid bounds issues
+        let initial_position = Position {
+            player: caller,
+            vec: Vec2 { x: 5, y: 5 }
+        };
+        world.write_model_test(@initial_position);
+
+        let moves = Moves {
+            player: caller,
+            last_direction: Option::None,
+            can_move: true,
+        };
+        world.write_model_test(@moves);
 
         actions_system.move(Direction::NorthEast);
 
         let new_position: Position = world.read_model(caller);
-        assert(new_position.vec.x == initial_position.vec.x + 1, 'position q is wrong');
-        assert(new_position.vec.y == initial_position.vec.y - 1, 'position r is wrong');
+        assert(new_position.vec.x == 6, 'position q is wrong');
+        assert(new_position.vec.y == 4, 'position r is wrong');
     }
 
     #[test]
     #[available_gas(30000000)]
-    #[should_panic(expected: ('Move out of bounds', 'ENTRYPOINT_FAILED'))]
+    #[should_panic(expected: ('Move is out of bounds', 'ENTRYPOINT_FAILED'))]
     fn test_move_out_of_bounds() {
         let caller: ContractAddress = 0.try_into().unwrap();
 
@@ -260,6 +271,72 @@ mod tests {
         world.write_model_test(@moves);
 
         actions_system.move(Direction::East);
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    #[should_panic(expected: ('Move is out of bounds', 'ENTRYPOINT_FAILED'))]
+    fn test_move_west_from_origin() {
+        // Test the bug fix: moving west from x=0 should be rejected gracefully
+        // Previously with u32, this would cause underflow
+        let caller: ContractAddress = 0.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        let origin_position = Position {
+            player: caller,
+            vec: Vec2 { x: 0, y: 5 }
+        };
+        world.write_model_test(@origin_position);
+
+        let moves = Moves {
+            player: caller,
+            last_direction: Option::None,
+            can_move: true,
+        };
+        world.write_model_test(@moves);
+
+        // This should fail gracefully with "Move is out of bounds"
+        // With the old u32 implementation, this caused underflow
+        actions_system.move(Direction::West);
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    #[should_panic(expected: ('Move is out of bounds', 'ENTRYPOINT_FAILED'))]
+    fn test_move_north_from_origin() {
+        // Test the bug fix: moving north from y=0 should be rejected gracefully
+        // Previously with u32, this would cause underflow
+        let caller: ContractAddress = 0.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        let origin_position = Position {
+            player: caller,
+            vec: Vec2 { x: 5, y: 0 }
+        };
+        world.write_model_test(@origin_position);
+
+        let moves = Moves {
+            player: caller,
+            last_direction: Option::None,
+            can_move: true,
+        };
+        world.write_model_test(@moves);
+
+        // This should fail gracefully with "Move is out of bounds"
+        // With the old u32 implementation, this caused underflow
+        actions_system.move(Direction::NorthWest);
     }
 
 }

@@ -36,30 +36,30 @@ pub struct PositionCount {
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub enum Direction {
     #[default]
-    East,       // E:  (+1,  0)
-    NorthEast,  // NE: (+1, -1)
-    NorthWest,  // NW: ( 0, -1)
-    West,       // W:  (-1,  0)
-    SouthWest,  // SW: (-1, +1)
-    SouthEast,  // SE: ( 0, +1)
+    East,       // 0: E:  (+1,  0)
+    NorthEast,  // 1: NE: (+1, -1)
+    NorthWest,  // 2: NW: ( 0, -1)
+    West,       // 3: W:  (-1,  0)
+    SouthWest,  // 4: SW: (-1, +1)
+    SouthEast,  // 5: SE: ( 0, +1)
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked, Debug, DojoStore)]
-pub struct Vec2 { // TODO(critical): negative coords implementation
-    pub x: u32,
-    pub y: u32,
+pub struct Vec2 {
+    pub x: i32,
+    pub y: i32,
 }
 
 
 impl DirectionIntoFelt252 of Into<Direction, felt252> {
     fn into(self: Direction) -> felt252 {
         match self {
-            Direction::East => 1,
-            Direction::NorthEast => 2,
-            Direction::NorthWest => 3,
-            Direction::West => 4,
-            Direction::SouthWest => 5,
-            Direction::SouthEast => 6,
+            Direction::East => 0,
+            Direction::NorthEast => 1,
+            Direction::NorthWest => 2,
+            Direction::West => 3,
+            Direction::SouthWest => 4,
+            Direction::SouthEast => 5,
         }
     }
 }

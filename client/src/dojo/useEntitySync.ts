@@ -30,8 +30,8 @@ export const usePlayerPositionSync = () => {
     new ToriiQueryBuilder()
       .withClause(
         KeysClause(
-          [address || "0x0"], // player address as key
-          [],
+          ["untitled-Position"],
+          [`${address || "0x0"}`],
           "FixedLen"
         ).build()
       )
@@ -111,7 +111,11 @@ export const usePlayerMovesSync = () => {
   useEntityQuery(
     new ToriiQueryBuilder()
       .withClause(
-        KeysClause([address || "0x0"], [], "FixedLen").build()
+        KeysClause(
+          ["untitled-Moves"],
+          [address || "0x0"],
+          "FixedLen"
+        ).build()
       )
       .includeHashedKeys()
   );
@@ -126,6 +130,8 @@ export const usePlayerMovesSync = () => {
 
         // Find moves entity for this player
         const entityArray = Object.values(entities);
+        console.log("🔍 Searching for Moves entity. Total entities:", entityArray.length);
+
         const movesEntity = entityArray.find((entity: any) => {
           const models = entity?.models || {};
           const movesModel = Object.values(models).find(
@@ -143,6 +149,8 @@ export const usePlayerMovesSync = () => {
           );
 
           if (movesModel) {
+            console.log("🔍 Raw movesModel from blockchain:", movesModel);
+
             const moves: Moves = {
               player: address,
               last_direction:
@@ -155,11 +163,14 @@ export const usePlayerMovesSync = () => {
 
             // Only update if different from last sync
             if (Date.now() - lastSyncRef.current > 100) {
+              console.log("✅ Moves synced from blockchain:", moves);
               debugLog("Moves synced from blockchain", moves);
               setMoves(moves);
               lastSyncRef.current = Date.now();
             }
           }
+        } else {
+          console.warn("⚠️ No Moves entity found for player:", address);
         }
       } catch (error) {
         console.error("Error syncing moves:", error);
@@ -202,6 +213,14 @@ export const useRefreshPlayerState = () => {
       debugLog("Force refreshing player state");
 
       const entityArray = Object.values(entities);
+      console.log("🔍 Total entities in store:", entityArray.length);
+      console.log("🔍 Looking for player address:", address);
+
+      // Log first few entities to see structure
+      if (entityArray.length > 0) {
+        console.log("📦 Sample entity:", entityArray[0]);
+        console.log("📦 All entity keys:", Object.keys(entities));
+      }
 
       // Find and process all relevant entities
       let positionFound = false;
@@ -210,9 +229,26 @@ export const useRefreshPlayerState = () => {
       for (const entity of entityArray) {
         const models = (entity as any)?.models || {};
 
+        // Log all models in this entity
+        const modelKeys = Object.keys(models);
+        if (modelKeys.length > 0) {
+          console.log("📋 Entity models:", modelKeys);
+        }
+
         // Check for position model
         for (const model of Object.values(models)) {
           const m = model as any;
+
+          // Log each model to see what we're comparing
+          if (m?.player) {
+            console.log("🔍 Found model with player:", {
+              modelPlayer: m.player,
+              targetPlayer: address,
+              match: m.player.toLowerCase() === address.toLowerCase(),
+              hasVec: m?.vec !== undefined,
+              hasCanMove: m?.can_move !== undefined,
+            });
+          }
 
           if (
             m?.player?.toLowerCase() === address.toLowerCase() &&
@@ -225,6 +261,7 @@ export const useRefreshPlayerState = () => {
                 y: m.vec.y || 0,
               },
             };
+            console.log("✅ Position found:", position);
             setPosition(position);
             setIsSpawned(true);
             positionFound = true;
@@ -242,6 +279,7 @@ export const useRefreshPlayerState = () => {
                   : null,
               can_move: m.can_move === true,
             };
+            console.log("✅ Moves found:", moves);
             setMoves(moves);
             movesFound = true;
           }
@@ -254,6 +292,7 @@ export const useRefreshPlayerState = () => {
           movesFound,
         });
       } else {
+        console.error("❌ No player state found in entities");
         debugLog("No player state found in entities");
       }
     } catch (error) {

@@ -20,10 +20,17 @@ export default function StartPage() {
         setIsSpawning(true);
 
         try {
+            console.log("🎮 Starting spawn process...");
             await handleSpawn();
-            navigate("/game");
+            console.log("✅ Spawn transaction complete, waiting for state sync...");
+
+            // Wait for blockchain state to sync
+            setTimeout(() => {
+                console.log("Navigating to game...");
+                navigate("/game");
+            }, 2000);
         } catch (error) {
-            console.error("Spawn failed:", error);
+            console.error("❌ Spawn failed:", error);
             setIsSpawning(false);
         }
     }, [handleSpawn, address, navigate]);

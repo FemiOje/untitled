@@ -148,7 +148,7 @@ const cartridgeController =
         tokens: {
           erc20: ["eth", "strk"],
         },
-        lazyload: true,
+        lazyload: false,
       })
     : null;
 
@@ -195,7 +195,7 @@ export function DynamicConnectorProvider({ children }: PropsWithChildren) {
       }}
     >
       <StarknetConfig
-        autoConnect={true}
+        autoConnect={false}
         defaultChainId={getDefaultChainId(currentNetworkConfig.chainId)}
         chains={starknetConfigChains}
         connectors={cartridgeController ? [cartridgeController] : []}

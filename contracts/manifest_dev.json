@@ -1,9 +1,9 @@
 {
   "world": {
-    "class_hash": "0x613551abceb2b37073b1149bb862ea70cf029981ce1ca47e9dd7c7ab97cb65d",
-    "address": "0x26d5777eccca1861a23303ee0ba48c0e8349e849d0377a21c3801ef1d0f8cef",
-    "seed": "dojo_starter",
-    "name": "Dojo starter",
+    "class_hash": "0x381899226c066a0262f45d6ab815f89818e0874ec3e66cdf72b5e92d8db4680",
+    "address": "0x6d1b48e127071958aae55efce2eeb6652f005825df733d28129f2afe4cc53b6",
+    "seed": "untitled_seed_1",
+    "name": "Untitled",
     "entrypoints": [
       "uuid",
       "set_metadata",
@@ -33,11 +33,11 @@
   },
   "contracts": [
     {
-      "address": "0x1ae76ae877518f905b73b643d96731e71e6b848ba68824adb4f1a77760fc3c7",
-      "class_hash": "0x1e4e6be422f3800cb260624f990b0e0a8250217cbd3c79db6c90a8d0c8527a0",
+      "address": "0x305699afcd703eec3163a096ca7d21e134d00b103b318666bdbcda0a28a0e9a",
+      "class_hash": "0x7b776b9f4c8991ceb283862b6372f1d2b62fb9ebf25e3a3db0e4ab4e6237b2f",
       "init_calldata": [],
-      "tag": "dojo_starter-actions",
-      "selector": "0x7a1c71029f2d0b38e3ac89b09931d08b6e48417e079c289ff19a8698d0cba33",
+      "tag": "untitled-actions",
+      "selector": "0x5afa061741b9774c0d1c33cd425394821df428c96ad37229a18717fb8512277",
       "systems": [
         "spawn",
         "move",
@@ -56,13 +56,13 @@
         },
         {
           "name": "directions",
-          "type": "core::array::Array::<dojo_starter::models::Direction>",
+          "type": "core::array::Array::<untitled::models::Direction>",
           "key": false
         }
       ],
-      "class_hash": "0x2559fd839331a03a9b36aa013a7a8b07d0c5f1ad5e011ff32e1f0d2d2c8bac0",
-      "tag": "dojo_starter-DirectionsAvailable",
-      "selector": "0x77844f1facb51e60e546a9832d56c6bd04fa23be4fd5b57290caae5e9a3c1e4"
+      "class_hash": "0x420e4abde85c26494543722488a1ec29e24dc3a6a6b3265a4b2e03f1250c569",
+      "tag": "untitled-DirectionsAvailable",
+      "selector": "0x604401da1f9aa3d555a1388b26a30cf8a3fb70169b14a439dffe6ac074023e"
     },
     {
       "members": [
@@ -72,13 +72,8 @@
           "key": true
         },
         {
-          "name": "remaining",
-          "type": "core::integer::u8",
-          "key": false
-        },
-        {
           "name": "last_direction",
-          "type": "core::option::Option::<dojo_starter::models::Direction>",
+          "type": "core::option::Option::<untitled::models::Direction>",
           "key": false
         },
         {
@@ -87,9 +82,9 @@
           "key": false
         }
       ],
-      "class_hash": "0x6a76fa6031748b3832fd5916ce4b4e7124c39f523c8e7b5d83da40cc93fc63d",
-      "tag": "dojo_starter-Moves",
-      "selector": "0x2a29373f1af8348bd366a990eb3a342ef2cbe5e85160539eaca3441a673f468"
+      "class_hash": "0x3f8d2bc6bd812687001c0fbe1b6a824047a7d0326b02292503111cc52df7b62",
+      "tag": "untitled-Moves",
+      "selector": "0x287657ebebd7a56803436085571af895f8d4b048bfe1661210830a8a3bec803"
     },
     {
       "members": [
@@ -100,13 +95,13 @@
         },
         {
           "name": "vec",
-          "type": "dojo_starter::models::Vec2",
+          "type": "untitled::models::Vec2",
           "key": false
         }
       ],
-      "class_hash": "0x1f7793c7abcd26a4fb648f883a947c8e6d74077b7161a008e1f1966b3b1f317",
-      "tag": "dojo_starter-Position",
-      "selector": "0x2ac8b4c190f7031b9fc44312e6b047a1dce0b3f2957c33a935ca7846a46dd5b"
+      "class_hash": "0x1e4d162f65fc17efc8ca900a8d65f465e80a8cd0e1291e46ff8a76b9c6cac56",
+      "tag": "untitled-Position",
+      "selector": "0x605c289def37e955438c94eed7dbf8a31675e098ae1bd2a9ee000630e22df7b"
     },
     {
       "members": [
@@ -121,9 +116,9 @@
           "key": false
         }
       ],
-      "class_hash": "0x71686e5c13179d564fbb3fe4cf68ad197e2722a0869502cb3017e2cf70ffc3",
-      "tag": "dojo_starter-PositionCount",
-      "selector": "0x44e8e8c3aea54e97e01563cacc08abb4a8ce8c468cd4d3a332bca12bfc2290d"
+      "class_hash": "0x31d733394a87db05f333b1a2afefc620dac46da0212be4b614d5da88da87edb",
+      "tag": "untitled-PositionCount",
+      "selector": "0x7f6b55fcd842c6f025a9e47b087e9dc1b1759c9e9e29a1d433bd142f5b014ab"
     }
   ],
   "events": [
@@ -136,13 +131,35 @@
         },
         {
           "name": "direction",
-          "type": "dojo_starter::models::Direction",
+          "type": "untitled::models::Direction",
+          "key": false
+        },
+        {
+          "name": "position",
+          "type": "untitled::models::Vec2",
           "key": false
         }
       ],
-      "class_hash": "0x1dc24a2235f0735e79b159a1ec312001651aee14281446b703b76b17b5dcf0c",
-      "tag": "dojo_starter-Moved",
-      "selector": "0x504403e5c02b6442527721fc464d9ea5fc8f1ee600ab5ccd5c0845d36fd45f1"
+      "class_hash": "0x74296afe2eb02fafda2e74572051934a32c64002575e0aeee848093a06d6946",
+      "tag": "untitled-Moved",
+      "selector": "0x62a794a096ae2445ca892f72cfd1569e60909c3a57f937a7a87b1689e9f5794"
+    },
+    {
+      "members": [
+        {
+          "name": "player",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "key": true
+        },
+        {
+          "name": "position",
+          "type": "untitled::models::Vec2",
+          "key": false
+        }
+      ],
+      "class_hash": "0x37f235f96aa024bb3e39d978ef38f53c34f23cfa32a15802a96547f7b89a551",
+      "tag": "untitled-Spawned",
+      "selector": "0x270f83119d6370b4c1e0c9d27711d3c42e220901c0b884a62005b284320cbc4"
     }
   ],
   "external_contracts": [],
@@ -300,11 +317,11 @@
     },
     {
       "type": "enum",
-      "name": "core::option::Option::<dojo_starter::models::Direction>",
+      "name": "core::option::Option::<untitled::models::Direction>",
       "variants": [
         {
           "name": "Some",
-          "type": "dojo_starter::models::Direction"
+          "type": "untitled::models::Direction"
         },
         {
           "name": "None",
@@ -1987,256 +2004,12 @@
       "state_mutability": "view"
     },
     {
-      "type": "enum",
-      "name": "dojo_starter::models::Direction",
-      "variants": [
-        {
-          "name": "Left",
-          "type": "()"
-        },
-        {
-          "name": "Right",
-          "type": "()"
-        },
-        {
-          "name": "Up",
-          "type": "()"
-        },
-        {
-          "name": "Down",
-          "type": "()"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::DirectionsAvailable",
-      "members": [
-        {
-          "name": "player",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "directions",
-          "type": "core::array::Array::<dojo_starter::models::Direction>"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::DirectionsAvailableValue",
-      "members": [
-        {
-          "name": "directions",
-          "type": "core::array::Array::<dojo_starter::models::Direction>"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::Moves",
-      "members": [
-        {
-          "name": "player",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "remaining",
-          "type": "core::integer::u8"
-        },
-        {
-          "name": "last_direction",
-          "type": "core::option::Option::<dojo_starter::models::Direction>"
-        },
-        {
-          "name": "can_move",
-          "type": "core::bool"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::MovesValue",
-      "members": [
-        {
-          "name": "remaining",
-          "type": "core::integer::u8"
-        },
-        {
-          "name": "last_direction",
-          "type": "core::option::Option::<dojo_starter::models::Direction>"
-        },
-        {
-          "name": "can_move",
-          "type": "core::bool"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::Position",
-      "members": [
-        {
-          "name": "player",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "vec",
-          "type": "dojo_starter::models::Vec2"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::PositionCount",
-      "members": [
-        {
-          "name": "identity",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "position",
-          "type": "core::array::Span::<(core::integer::u8, core::integer::u128)>"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::PositionCountValue",
-      "members": [
-        {
-          "name": "position",
-          "type": "core::array::Span::<(core::integer::u8, core::integer::u128)>"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::PositionValue",
-      "members": [
-        {
-          "name": "vec",
-          "type": "dojo_starter::models::Vec2"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::models::Vec2",
-      "members": [
-        {
-          "name": "x",
-          "type": "core::integer::u32"
-        },
-        {
-          "name": "y",
-          "type": "core::integer::u32"
-        }
-      ]
-    },
-    {
-      "type": "event",
-      "name": "dojo_starter::models::m_DirectionsAvailable::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
-      "type": "event",
-      "name": "dojo_starter::models::m_Moves::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
-      "type": "event",
-      "name": "dojo_starter::models::m_Position::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
-      "type": "event",
-      "name": "dojo_starter::models::m_PositionCount::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
-      "type": "interface",
-      "name": "dojo_starter::systems::actions::IActions",
-      "items": [
-        {
-          "type": "function",
-          "name": "spawn",
-          "inputs": [],
-          "outputs": [],
-          "state_mutability": "external"
-        },
-        {
-          "type": "function",
-          "name": "move",
-          "inputs": [
-            {
-              "name": "direction",
-              "type": "dojo_starter::models::Direction"
-            }
-          ],
-          "outputs": [],
-          "state_mutability": "external"
-        }
-      ]
-    },
-    {
-      "type": "event",
-      "name": "dojo_starter::systems::actions::actions::Event",
-      "kind": "enum",
-      "variants": [
-        {
-          "name": "UpgradeableEvent",
-          "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
-          "kind": "nested"
-        },
-        {
-          "name": "WorldProviderEvent",
-          "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
-          "kind": "nested"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::systems::actions::actions::Moved",
-      "members": [
-        {
-          "name": "player",
-          "type": "core::starknet::contract_address::ContractAddress"
-        },
-        {
-          "name": "direction",
-          "type": "dojo_starter::models::Direction"
-        }
-      ]
-    },
-    {
-      "type": "struct",
-      "name": "dojo_starter::systems::actions::actions::MovedValue",
-      "members": [
-        {
-          "name": "direction",
-          "type": "dojo_starter::models::Direction"
-        }
-      ]
-    },
-    {
-      "type": "event",
-      "name": "dojo_starter::systems::actions::actions::e_Moved::Event",
-      "kind": "enum",
-      "variants": []
-    },
-    {
       "type": "function",
       "name": "ensure_abi",
       "inputs": [
         {
           "name": "event",
-          "type": "dojo_starter::systems::actions::actions::Moved"
+          "type": "untitled::systems::actions::actions::Spawned"
         }
       ],
       "outputs": [],
@@ -2255,11 +2028,293 @@
       "inputs": [
         {
           "name": "value",
-          "type": "dojo_starter::systems::actions::actions::MovedValue"
+          "type": "untitled::systems::actions::actions::SpawnedValue"
         }
       ],
       "outputs": [],
       "state_mutability": "view"
+    },
+    {
+      "type": "enum",
+      "name": "untitled::models::Direction",
+      "variants": [
+        {
+          "name": "East",
+          "type": "()"
+        },
+        {
+          "name": "NorthEast",
+          "type": "()"
+        },
+        {
+          "name": "NorthWest",
+          "type": "()"
+        },
+        {
+          "name": "West",
+          "type": "()"
+        },
+        {
+          "name": "SouthWest",
+          "type": "()"
+        },
+        {
+          "name": "SouthEast",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::DirectionsAvailable",
+      "members": [
+        {
+          "name": "player",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "directions",
+          "type": "core::array::Array::<untitled::models::Direction>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::DirectionsAvailableValue",
+      "members": [
+        {
+          "name": "directions",
+          "type": "core::array::Array::<untitled::models::Direction>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::Moves",
+      "members": [
+        {
+          "name": "player",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "last_direction",
+          "type": "core::option::Option::<untitled::models::Direction>"
+        },
+        {
+          "name": "can_move",
+          "type": "core::bool"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::MovesValue",
+      "members": [
+        {
+          "name": "last_direction",
+          "type": "core::option::Option::<untitled::models::Direction>"
+        },
+        {
+          "name": "can_move",
+          "type": "core::bool"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::Position",
+      "members": [
+        {
+          "name": "player",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "vec",
+          "type": "untitled::models::Vec2"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::PositionCount",
+      "members": [
+        {
+          "name": "identity",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "position",
+          "type": "core::array::Span::<(core::integer::u8, core::integer::u128)>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::PositionCountValue",
+      "members": [
+        {
+          "name": "position",
+          "type": "core::array::Span::<(core::integer::u8, core::integer::u128)>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::PositionValue",
+      "members": [
+        {
+          "name": "vec",
+          "type": "untitled::models::Vec2"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::models::Vec2",
+      "members": [
+        {
+          "name": "x",
+          "type": "core::integer::i32"
+        },
+        {
+          "name": "y",
+          "type": "core::integer::i32"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "untitled::models::m_DirectionsAvailable::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "untitled::models::m_Moves::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "untitled::models::m_Position::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "untitled::models::m_PositionCount::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "interface",
+      "name": "untitled::systems::actions::IActions",
+      "items": [
+        {
+          "type": "function",
+          "name": "spawn",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "move",
+          "inputs": [
+            {
+              "name": "direction",
+              "type": "untitled::models::Direction"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "untitled::systems::actions::actions::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "UpgradeableEvent",
+          "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "nested"
+        },
+        {
+          "name": "WorldProviderEvent",
+          "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::systems::actions::actions::Moved",
+      "members": [
+        {
+          "name": "player",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "direction",
+          "type": "untitled::models::Direction"
+        },
+        {
+          "name": "position",
+          "type": "untitled::models::Vec2"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::systems::actions::actions::MovedValue",
+      "members": [
+        {
+          "name": "direction",
+          "type": "untitled::models::Direction"
+        },
+        {
+          "name": "position",
+          "type": "untitled::models::Vec2"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::systems::actions::actions::Spawned",
+      "members": [
+        {
+          "name": "player",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "position",
+          "type": "untitled::models::Vec2"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::systems::actions::actions::SpawnedValue",
+      "members": [
+        {
+          "name": "position",
+          "type": "untitled::models::Vec2"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "untitled::systems::actions::actions::e_Moved::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "untitled::systems::actions::actions::e_Spawned::Event",
+      "kind": "enum",
+      "variants": []
     }
   ]
 }

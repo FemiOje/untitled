@@ -17,12 +17,11 @@ pub fn get_neighbor(position: Vec2, direction: Direction) -> Vec2 {
 }
 
 /// Check if hex is within 10x10 grid bounds
-/// Note: Axial coordinates can have negative values for some hexes
-/// We need to define bounds based on game design
+/// Validates that coordinates are in the range [0, 10)
 pub fn is_within_bounds(position: Vec2) -> bool {
     // Simple rectangular bounding for 10x10 hex grid
     // This allows hexes where 0 <= q < 10 and 0 <= r < 10
-    position.x < 10 && position.y < 10
+    position.x >= 0 && position.x < 10 && position.y >= 0 && position.y < 10
 }
 
 // Note: axial_to_cube commented out for future use

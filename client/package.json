@@ -75,8 +75,5 @@
     "typescript-eslint": "^8.34.1",
     "vite": "^6.0.3",
     "vitest": "latest"
-  },
-    "overrides": {
-      "react-is": "^18.3.1"
   }
 }

@@ -2,19 +2,24 @@
  * Coordinate System Mapping
  *
  * Maps between blockchain coordinates and UI coordinates:
- * - Blockchain: Vec2 {x, y} - Axial coordinates (q, r)
- * - UI: HexPosition {col, row} - Also axial coordinates
+ * - Blockchain: Vec2 {x, y} - Pure axial coordinates (q, r)
+ * - UI: HexPosition {col, row} - Pure axial coordinates (q, r)
+ * - Three.js rendering: Converts axial to 3D space correctly (see three/utils.ts)
  *
- * The HexGrid component uses axial coordinates disguised as {col, row},
- * so the mapping is straightforward: x=col, y=row
+ * Both systems use identical axial coordinates, so the mapping is a direct 1:1:
+ * x = col (q-axis), y = row (r-axis)
  *
- * Direction mapping:
- * - Direction.East (1) = Vec2(+1, 0) = HexPosition(+1, 0)
- * - Direction.NorthEast (2) = Vec2(+1, -1) = HexPosition(+1, -1)
- * - Direction.NorthWest (3) = Vec2(0, -1) = HexPosition(0, -1)
- * - Direction.West (4) = Vec2(-1, 0) = HexPosition(-1, 0)
- * - Direction.SouthWest (5) = Vec2(-1, +1) = HexPosition(-1, +1)
- * - Direction.SouthEast (6) = Vec2(0, +1) = HexPosition(0, +1)
+ * Direction mapping (0-based to match Cairo enum serialization):
+ * - Direction.East (0) = Vec2(+1, 0) = HexPosition(+1, 0)
+ * - Direction.NorthEast (1) = Vec2(+1, -1) = HexPosition(+1, -1)
+ * - Direction.NorthWest (2) = Vec2(0, -1) = HexPosition(0, -1)
+ * - Direction.West (3) = Vec2(-1, 0) = HexPosition(-1, 0)
+ * - Direction.SouthWest (4) = Vec2(-1, +1) = HexPosition(-1, +1)
+ * - Direction.SouthEast (5) = Vec2(0, +1) = HexPosition(0, +1)
+ *
+ * Note: The rendering layer (three/utils.ts) handles conversion from axial to
+ * 3D pixel coordinates for display, but the logical coordinate system remains
+ * pure axial throughout.
  */
 
 import type { Vec2 } from "@/types/game";
@@ -26,10 +31,12 @@ import type { HexPosition } from "@/three/utils";
  * @returns UI position {col, row}
  */
 export function vec2ToHexPosition(vec: Vec2): HexPosition {
-  return {
+  const result = {
     col: vec.x,
     row: vec.y,
   };
+  console.log("📍 vec2ToHexPosition:", { vec, result });
+  return result;
 }
 
 /**
@@ -56,17 +63,29 @@ export function calculateDirection(from: HexPosition, to: HexPosition): number |
   const dy = to.row - from.row;
 
   // Direction mapping based on Vec2 offsets
+  // Uses 0-based indexing to match Cairo enum serialization
   const directionMap: Record<string, number> = {
-    "1,0": 1,    // East
-    "1,-1": 2,   // NorthEast
-    "0,-1": 3,   // NorthWest
-    "-1,0": 4,   // West
-    "-1,1": 5,   // SouthWest
-    "0,1": 6,    // SouthEast
+    "1,0": 0,    // East
+    "1,-1": 1,   // NorthEast
+    "0,-1": 2,   // NorthWest
+    "-1,0": 3,   // West
+    "-1,1": 4,   // SouthWest
+    "0,1": 5,    // SouthEast
   };
 
   const key = `${dx},${dy}`;
-  return directionMap[key] ?? null;
+  const direction = directionMap[key] ?? null;
+
+  console.log("🧭 calculateDirection:", {
+    from,
+    to,
+    delta: { dx, dy },
+    key,
+    direction,
+    directionName: direction !== null ? ["East", "NorthEast", "NorthWest", "West", "SouthWest", "SouthEast"][direction] : "Invalid"
+  });
+
+  return direction;
 }
 
 /**

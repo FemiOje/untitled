@@ -116,7 +116,6 @@ export const useGameActions = () => {
         return;
       }
 
-      // Check if player can move
       if (!canPlayerMove()) {
         showErrorNotification("Cannot move yet");
         return;

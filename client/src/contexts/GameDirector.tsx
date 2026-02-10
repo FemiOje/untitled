@@ -149,6 +149,14 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
           if (event.position) {
             setPosition(event.position);
             setIsSpawned(true);
+
+            // Initialize Moves state - contract creates Moves with can_move: true during spawn
+            setMoves({
+              player: event.position.player,
+              last_direction: null,
+              can_move: true,
+            });
+
             debugLog("Player spawned at", event.position.vec);
           }
           break;

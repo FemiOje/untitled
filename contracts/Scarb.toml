@@ -8,15 +8,18 @@ sierra-replace-ids = true
 
 [scripts]
 copy-bindings = "cp -r ./bindings/typescript/* ../client/src/typescript/"
-deploy = "PROFILE=sepolia && sozo -P $PROFILE migrate && cp ./manifest_sepolia.json ../client/src/manifests/manifest_sepolia.json"
+deploy-sepolia = "PROFILE=sepolia && sozo -P $PROFILE migrate && cp ./manifest_sepolia.json ../client/src/manifests/manifest_sepolia.json"
+deploy-dev = "PROFILE=dev && sozo -P $PROFILE migrate && cp ./manifest_dev.json ../client/src/manifests/manifest_dev.json"
 inspect = "PROFILE=sepolia && sozo -P $PROFILE inspect"
+inspect-dev = "PROFILE=dev && sozo -P $PROFILE inspect"
 
 # build + copy bindings + deploy + inspect
-migrate = "PROFILE=sepolia && sozo -P $PROFILE clean && sozo -P $PROFILE build --typescript && scarb run copy-bindings && scarb run deploy && scarb run inspect"
-
-# example calls
-spawn = "PROFILE=sepolia && sozo -P $PROFILE execute untitled-actions spawn --wait"
-move = "PROFILE=sepolia && sozo -P $PROFILE execute untitled-actions move 1 --wait"
+migrate = "PROFILE=sepolia && sozo -P $PROFILE clean && sozo -P $PROFILE build --typescript && sozo -P $PROFILE test && scarb run copy-bindings && scarb run deploy-sepolia && scarb run inspect"
+migrate-dev = "PROFILE=dev && sozo -P $PROFILE clean && sozo -P $PROFILE build --typescript && sozo -P $PROFILE test && scarb run copy-bindings && scarb run deploy-dev && scarb run inspect"
+spawn-sepolia = "PROFILE=sepolia && sozo -P $PROFILE execute untitled-actions spawn --wait"
+move-sepolia = "PROFILE=sepolia && sozo -P $PROFILE execute untitled-actions move 1 --wait"
+spawn-dev = "PROFILE=dev && sozo -P $PROFILE execute untitled-actions spawn --wait"
+move-dev = "PROFILE=dev && sozo -P $PROFILE execute untitled-actions move 1 --wait"
 
 [dependencies]
 dojo = "1.8.0"
