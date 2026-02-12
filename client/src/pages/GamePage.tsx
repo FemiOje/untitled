@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { KeysClause, ToriiQueryBuilder } from "@dojoengine/sdk";
 // import { useAccount } from "@starknet-react/core";
 import { useEntityQuery } from "@dojoengine/sdk/react";
@@ -14,7 +14,12 @@ import { vec2ToHexPosition, calculateDirection } from "../utils/coordinateMappin
 
 export default function GamePage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { refreshGameState } = useGameDirector();
+
+    // Get game_id from URL
+    const gameIdFromUrl = searchParams.get("id");
+    const gameId = gameIdFromUrl ? parseInt(gameIdFromUrl, 10) : null;
 
     // Query all entities - for debugging/overview
     // Note: This can be expensive, use specific queries in production
@@ -49,17 +54,20 @@ export default function GamePage() {
         });
     }, [isSpawned, blockchainPosition, canMove, moves, isLoading]);
 
-    // Redirect to start page if not spawned (with delay to allow for sync)
+    // URL validation - redirect if no game_id or invalid game_id
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (!isSpawned && !isLoading) {
-                console.log("Player not spawned after timeout, redirecting to start page...");
-                navigate("/");
-            }
-        }, 2000); // Wait 2 seconds for state to sync
+        if (!gameId || gameId <= 0) {
+            console.log("No valid game ID in URL, redirecting to start page...");
+            navigate("/");
+            return;
+        }
 
-        return () => clearTimeout(timer);
-    }, [isSpawned, isLoading, navigate]);
+        // TODO: When game_id is in URL, validate it belongs to connected wallet
+        // For now, we'll just check if we're spawned
+        // Future: call getGameState(gameId) to verify ownership
+
+        console.log("Game page loaded with game_id:", gameId);
+    }, [gameId, navigate]);
 
     // Convert blockchain Vec2 to HexPosition for display
     const playerPosition: HexPosition = blockchainPosition

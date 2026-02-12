@@ -19,14 +19,18 @@ export const useGameActions = () => {
   const { spawn, move, executeAction, setCurrentMoves } = useSystemCalls();
   const { processEvent, refreshGameState } = useGameDirector();
 
-  // Get store actions
+  // Get store state and actions
   const {
     setOptimisticPosition,
     rollbackOptimisticPosition,
     setIsSpawned,
+    setGameId,
     getCurrentPosition,
     canPlayerMove,
   } = useGameStore();
+
+  // Get current game_id from store
+  const gameId = useGameStore((state) => state.gameId);
 
   const { setIsTransactionPending, setError } = useUIStore();
 
@@ -78,6 +82,20 @@ export const useGameActions = () => {
         if (event.type === "spawned") {
           debugLog("Player spawned", event.position);
           setIsSpawned(true);
+
+          // Capture and save game_id
+          if (event.gameId) {
+            debugLog("Captured game_id from spawn event:", event.gameId);
+            setGameId(event.gameId);
+
+            // Save to localStorage for persistence
+            if (address) {
+              const storageKey = `untitled_game_id_${address}`;
+              localStorage.setItem(storageKey, event.gameId.toString());
+              debugLog("Saved game_id to localStorage", { key: storageKey, gameId: event.gameId });
+            }
+          }
+
           showSuccessNotification("Player spawned successfully!");
         }
       });
@@ -101,6 +119,7 @@ export const useGameActions = () => {
     processEvent,
     refreshGameState,
     setIsSpawned,
+    setGameId,
     setIsTransactionPending,
     setError,
   ]);
@@ -113,6 +132,11 @@ export const useGameActions = () => {
     async (direction: Direction) => {
       if (!address) {
         showErrorNotification("No wallet connected");
+        return;
+      }
+
+      if (!gameId) {
+        showErrorNotification("No active game");
         return;
       }
 
@@ -131,7 +155,7 @@ export const useGameActions = () => {
         setIsMoving(true);
         setIsTransactionPending(true);
 
-        debugLog("Moving player", { currentPos, direction });
+        debugLog("Moving player", { gameId, currentPos, direction });
 
         // Optimistic update: calculate and show new position immediately
         const optimisticPos = createOptimisticMove(direction);
@@ -140,8 +164,8 @@ export const useGameActions = () => {
           debugLog("Optimistic position set", optimisticPos);
         }
 
-        // Create move call
-        const moveCall = move(direction);
+        // Create move call with game_id
+        const moveCall = move(gameId, direction);
 
         // Execute with callbacks
         const events = await executeAction(
@@ -199,6 +223,7 @@ export const useGameActions = () => {
     },
     [
       address,
+      gameId,
       move,
       executeAction,
       processEvent,

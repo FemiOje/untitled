@@ -64,6 +64,7 @@ export interface PositionCount {
  */
 export interface GameEvent {
   type: 'spawned' | 'moved' | 'position_update' | 'unknown';
+  gameId?: number;  // game_id from event (u32)
   player?: string;
   position?: Position;
   direction?: Direction;

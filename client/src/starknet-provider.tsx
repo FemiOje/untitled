@@ -195,7 +195,7 @@ export function DynamicConnectorProvider({ children }: PropsWithChildren) {
       }}
     >
       <StarknetConfig
-        autoConnect={false}
+        autoConnect={true}
         defaultChainId={getDefaultChainId(currentNetworkConfig.chainId)}
         chains={starknetConfigChains}
         connectors={cartridgeController ? [cartridgeController] : []}

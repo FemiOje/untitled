@@ -1,39 +1,10 @@
-import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useController } from "../contexts/controller";
-import { useGameActions } from "../dojo/useGameActions";
 import WalletConnect from "../components/WalletConnect";
+import MyGames from "../components/MyGames";
 
 export default function StartPage() {
-    const navigate = useNavigate();
     const { address } = useController();
-    const { handleSpawn, isLoading } = useGameActions();
-    const [isSpawning, setIsSpawning] = useState(false);
-
-    const handleStartGame = useCallback(async () => {
-        if (!address) {
-            console.warn("No wallet connected");
-            return;
-        }
-
-        setIsSpawning(true);
-
-        try {
-            console.log("🎮 Starting spawn process...");
-            await handleSpawn();
-            console.log("✅ Spawn transaction complete, waiting for state sync...");
-
-            // Wait for blockchain state to sync
-            setTimeout(() => {
-                console.log("Navigating to game...");
-                navigate("/game");
-            }, 2000);
-        } catch (error) {
-            console.error("❌ Spawn failed:", error);
-            setIsSpawning(false);
-        }
-    }, [handleSpawn, address, navigate]);
 
     return (
         <Box sx={styles.container}>
@@ -51,19 +22,9 @@ export default function StartPage() {
                     <WalletConnect />
                 </Box>
 
-                {address && (
-                    <Button
-                        variant="contained"
-                        size="large"
-                        onClick={handleStartGame}
-                        disabled={isLoading || isSpawning}
-                        sx={styles.startButton}
-                    >
-                        {isSpawning ? "Spawning Player..." : "Start Game"}
-                    </Button>
-                )}
-
-                {!address && (
+                {address ? (
+                    <MyGames />
+                ) : (
                     <Typography sx={styles.connectPrompt}>
                         Connect your wallet to start playing
                     </Typography>
@@ -136,29 +97,6 @@ const styles = {
     walletSection: {
         marginTop: 2,
         marginBottom: 1,
-    },
-    startButton: {
-        marginTop: 2,
-        padding: "16px 48px",
-        fontSize: "1.1rem",
-        fontWeight: 600,
-        letterSpacing: 1,
-        background: "linear-gradient(135deg, #4285f4 0%, #34a853 100%)",
-        color: "#fff",
-        borderRadius: "8px",
-        textTransform: "uppercase",
-        boxShadow: "0 4px 16px rgba(66, 133, 244, 0.4)",
-        transition: "all 0.3s ease",
-        "&:hover": {
-            background: "linear-gradient(135deg, #5295ff 0%, #45b963 100%)",
-            boxShadow: "0 6px 24px rgba(66, 133, 244, 0.6)",
-            transform: "translateY(-2px)",
-        },
-        "&:disabled": {
-            background: "rgba(66, 133, 244, 0.3)",
-            color: "rgba(255, 255, 255, 0.5)",
-            boxShadow: "none",
-        },
     },
     connectPrompt: {
         marginTop: 2,

@@ -4,19 +4,36 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_actions_move_calldata = (direction: CairoCustomEnum): DojoCall => {
+	const build_actions_getGameState_calldata = (gameId: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
-			entrypoint: "move",
-			calldata: [direction],
+			entrypoint: "get_game_state",
+			calldata: [gameId],
 		};
 	};
 
-	const actions_move = async (snAccount: Account | AccountInterface, direction: CairoCustomEnum) => {
+	const actions_getGameState = async (gameId: BigNumberish) => {
+		try {
+			return await provider.call("untitled", build_actions_getGameState_calldata(gameId));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_move_calldata = (gameId: BigNumberish, direction: CairoCustomEnum): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "move",
+			calldata: [gameId, direction],
+		};
+	};
+
+	const actions_move = async (snAccount: Account | AccountInterface, gameId: BigNumberish, direction: CairoCustomEnum) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_move_calldata(direction),
+				build_actions_move_calldata(gameId, direction),
 				"untitled",
 			);
 		} catch (error) {
@@ -50,6 +67,8 @@ export function setupWorld(provider: DojoProvider) {
 
 	return {
 		actions: {
+			getGameState: actions_getGameState,
+			buildGetGameStateCalldata: build_actions_getGameState_calldata,
 			move: actions_move,
 			buildMoveCalldata: build_actions_move_calldata,
 			spawn: actions_spawn,

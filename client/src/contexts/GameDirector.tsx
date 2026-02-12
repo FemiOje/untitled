@@ -47,6 +47,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
     setPosition,
     setMoves,
     setIsSpawned,
+    setGameId,
     setIsInitializing,
     addEvent,
     resetGameState,
@@ -92,6 +93,17 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
       // Set player address in store
       initializePlayerState(address);
 
+      // Load game_id from localStorage if available
+      const storageKey = `untitled_game_id_${address}`;
+      const savedGameId = localStorage.getItem(storageKey);
+      if (savedGameId) {
+        const gameId = parseInt(savedGameId, 10);
+        if (!isNaN(gameId) && gameId > 0) {
+          debugLog("Loaded game_id from localStorage", gameId);
+          setGameId(gameId);
+        }
+      }
+
       // Fetch initial state from blockchain
       const state = await getPlayerState(address);
 
@@ -122,6 +134,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
     }
   }, [
     address,
+    setGameId,
     getPlayerState,
     setPosition,
     setMoves,

@@ -61,14 +61,15 @@ export const useSystemCalls = () => {
    * Factory function for move action
    * Moves the player in a specified direction
    *
+   * @param gameId - The game ID (u32)
    * @param direction - Direction enum value (0-5 for hex directions)
    * @returns Contract call object
    */
-  const move = (direction: number) => {
+  const move = (gameId: number, direction: number) => {
     return {
       contractAddress: ACTIONS_ADDRESS,
       entrypoint: "move",
-      calldata: [direction],
+      calldata: [gameId, direction],
     };
   };
 

@@ -65,7 +65,7 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
     // data[0] = number of keys
     const numKeys = parseInt(data[0] || "0", 16);
     // data[1..numKeys] = key values
-    const player = data[1]; // First key is always player address
+    const gameId = parseInt(data[1] || "0", 16); // First key is game_id
     // data[numKeys + 1] = number of values
     const numValues = parseInt(data[numKeys + 1] || "0", 16);
     // data[numKeys + 2..] = value fields
@@ -76,19 +76,22 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
       selector: eventSelector,
       numKeys,
       numValues,
-      player,
+      gameId,
       data,
     });
 
     // Parse Spawned event
-    // Values: Vec2 { x, y }
+    // Key: game_id
+    // Values: player (address), position.x, position.y
     if (eventName === "spawned") {
-      const vec = parseVec2(data, valueOffset);
+      const player = data[valueOffset]; // player is first value
+      const vec = parseVec2(data, valueOffset + 1); // position follows player
 
-      debugLog("Parsed Spawned event:", { player, vec });
+      debugLog("Parsed Spawned event:", { gameId, player, vec });
 
       return {
         type: "spawned",
+        gameId,
         player,
         position: {
           player,
@@ -98,19 +101,20 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
     }
 
     // Parse Moved event
-    // Values: Direction, Vec2 { x, y }
+    // Key: game_id
+    // Values: direction, position.x, position.y
     if (eventName === "moved") {
       const direction = parseInt(data[valueOffset] || "0", 16) as Direction;
       const vec = parseVec2(data, valueOffset + 1);
 
-      debugLog("Parsed Moved event:", { player, direction, vec });
+      debugLog("Parsed Moved event:", { gameId, direction, vec });
 
       return {
         type: "moved",
-        player,
+        gameId,
         direction,
         position: {
-          player,
+          player: "", // Player not in Moved event anymore
           vec,
         },
       };

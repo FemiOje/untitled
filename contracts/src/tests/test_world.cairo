@@ -6,17 +6,21 @@ mod tests {
         ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
         spawn_test_world,
     };
-    use untitled::models::{Direction, Moves, Position, Vec2, m_Moves, m_Position};
+    use untitled::models::{
+        Direction, PlayerState, Vec2,
+        GameSession,
+        m_PlayerState, m_GameSession,
+    };
     use untitled::systems::actions::{IActionsDispatcher, IActionsDispatcherTrait, actions};
     use untitled::utils::hex::{get_neighbor, is_within_bounds};
-    use starknet::{ContractAddress, testing};
+    use starknet::ContractAddress;
 
     fn namespace_def() -> NamespaceDef {
         let ndef = NamespaceDef {
             namespace: "untitled",
             resources: [
-                TestResource::Model(m_Position::TEST_CLASS_HASH),
-                TestResource::Model(m_Moves::TEST_CLASS_HASH),
+                TestResource::Model(m_PlayerState::TEST_CLASS_HASH),
+                TestResource::Model(m_GameSession::TEST_CLASS_HASH),
                 TestResource::Event(actions::e_Spawned::TEST_CLASS_HASH),
                 TestResource::Event(actions::e_Moved::TEST_CLASS_HASH),
                 TestResource::Contract(actions::TEST_CLASS_HASH),
@@ -38,7 +42,7 @@ mod tests {
     #[test]
     fn test_world_test_set() {
         // Initialize test environment
-        let caller: ContractAddress = 0.try_into().unwrap();
+        let test_game_id: u32 = 999;
         let ndef = namespace_def();
 
         // Register the resources.
@@ -47,23 +51,23 @@ mod tests {
         // Ensures permissions and initializations are synced.
         world.sync_perms_and_inits(contract_defs());
 
-        // Test initial position
-        let mut position: Position = world.read_model(caller);
-        assert(position.vec.x == 0 && position.vec.y == 0, 'initial position wrong');
+        // Test initial player state (read non-existent model returns zero)
+        let mut state: PlayerState = world.read_model(test_game_id);
+        assert(state.position.x == 0 && state.position.y == 0, 'initial position wrong');
 
         // Test write_model_test
-        position.vec.x = 122;
-        position.vec.y = 88;
+        state.position.x = 122;
+        state.position.y = 88;
 
-        world.write_model_test(@position);
+        world.write_model_test(@state);
 
-        let mut position: Position = world.read_model(caller);
-        assert(position.vec.y == 88, 'write_value_from_id failed');
+        let mut state: PlayerState = world.read_model(test_game_id);
+        assert(state.position.y == 88, 'write_value_from_id failed');
 
         // Test model deletion
-        world.erase_model(@position);
-        let position: Position = world.read_model(caller);
-        assert(position.vec.x == 0 && position.vec.y == 0, 'erase_model failed');
+        world.erase_model(@state);
+        let state: PlayerState = world.read_model(test_game_id);
+        assert(state.position.x == 0 && state.position.y == 0, 'erase_model failed');
     }
 
     // Test hex movement utility functions
@@ -137,16 +141,21 @@ mod tests {
 
         actions_system.spawn();
 
-        // Verify position is within bounds (random spawn)
-        let position: Position = world.read_model(caller);
-        assert(is_within_bounds(position.vec), 'Spawn out of bounds');
-        assert(position.vec.x < 10, 'X coord out of range');
-        assert(position.vec.y < 10, 'Y coord out of range');
+        // Game ID should be uuid() + 1, which is 1 for first spawn
+        let game_id: u32 = 1;
 
-        // Verify moves are initialized correctly
-        let moves: Moves = world.read_model(caller);
-        assert(moves.can_move, 'Cannot move');
-        assert(moves.last_direction.is_none(), 'Last direction should be None');
+        // Verify GameSession created
+        let session: GameSession = world.read_model(game_id);
+        assert(session.player == caller, 'Session player wrong');
+        assert(session.is_active, 'Session should be active');
+
+        // Verify PlayerState initialized correctly
+        let state: PlayerState = world.read_model(game_id);
+        assert(is_within_bounds(state.position), 'Spawn out of bounds');
+        assert(state.position.x < 10, 'X coord out of range');
+        assert(state.position.y < 10, 'Y coord out of range');
+        assert(state.can_move, 'Cannot move');
+        assert(state.last_direction.is_none(), 'Last direction should be None');
     }
 
     #[test]
@@ -168,20 +177,31 @@ mod tests {
         // Spawn first player
         starknet::testing::set_contract_address(caller1);
         actions_system.spawn();
-        let position1: Position = world.read_model(caller1);
+        let game_id1: u32 = 1;
+        let state1: PlayerState = world.read_model(game_id1);
 
         // Spawn second player
         starknet::testing::set_contract_address(caller2);
         actions_system.spawn();
-        let position2: Position = world.read_model(caller2);
+        let game_id2: u32 = 2;
+        let state2: PlayerState = world.read_model(game_id2);
 
         // Both positions should be valid
-        assert(is_within_bounds(position1.vec), 'Player 1 out of bounds');
-        assert(is_within_bounds(position2.vec), 'Player 2 out of bounds');
+        assert(is_within_bounds(state1.position), 'Player 1 out of bounds');
+        assert(is_within_bounds(state2.position), 'Player 2 out of bounds');
 
         // Positions should differ (due to different player addresses in seed)
-        let same_position = position1.vec.x == position2.vec.x && position1.vec.y == position2.vec.y;
+        let same_position = state1.position.x == state2.position.x && state1.position.y == state2.position.y;
         assert(!same_position, 'Positions should differ');
+
+        // Verify each player has a distinct game session
+        let session1: GameSession = world.read_model(game_id1);
+        assert(session1.player == caller1, 'Session1 player wrong');
+
+        let session2: GameSession = world.read_model(game_id2);
+        assert(session2.player == caller2, 'Session2 player wrong');
+
+        assert(game_id1 != game_id2, 'Game IDs should differ');
     }
 
     #[test]
@@ -197,18 +217,18 @@ mod tests {
         let actions_system = IActionsDispatcher { contract_address };
 
         actions_system.spawn();
-        let initial_position: Position = world.read_model(caller);
+        let game_id: u32 = 1;
 
-        actions_system.move(Direction::East);
+        let initial_state: PlayerState = world.read_model(game_id);
 
-        let moves: Moves = world.read_model(caller);
+        actions_system.move(game_id, Direction::East);
+
+        let new_state: PlayerState = world.read_model(game_id);
         let east_dir_felt: felt252 = Direction::East.into();
 
-        assert(moves.last_direction.unwrap().into() == east_dir_felt, 'last direction is wrong');
-
-        let new_position: Position = world.read_model(caller);
-        assert(new_position.vec.x == initial_position.vec.x + 1, 'position q is wrong');
-        assert(new_position.vec.y == initial_position.vec.y, 'position r is wrong');
+        assert(new_state.last_direction.unwrap().into() == east_dir_felt, 'last direction is wrong');
+        assert(new_state.position.x == initial_state.position.x + 1, 'position q is wrong');
+        assert(new_state.position.y == initial_state.position.y, 'position r is wrong');
     }
 
     #[test]
@@ -223,25 +243,28 @@ mod tests {
         let (contract_address, _) = world.dns(@"actions").unwrap();
         let actions_system = IActionsDispatcher { contract_address };
 
-        // Set safe starting position to avoid bounds issues
-        let initial_position = Position {
+        // Create test game session and state
+        let test_game_id: u32 = 999;
+        let session = GameSession {
+            game_id: test_game_id,
             player: caller,
-            vec: Vec2 { x: 5, y: 5 }
+            is_active: true,
         };
-        world.write_model_test(@initial_position);
+        world.write_model_test(@session);
 
-        let moves = Moves {
-            player: caller,
+        let initial_state = PlayerState {
+            game_id: test_game_id,
+            position: Vec2 { x: 5, y: 5 },
             last_direction: Option::None,
             can_move: true,
         };
-        world.write_model_test(@moves);
+        world.write_model_test(@initial_state);
 
-        actions_system.move(Direction::NorthEast);
+        actions_system.move(test_game_id, Direction::NorthEast);
 
-        let new_position: Position = world.read_model(caller);
-        assert(new_position.vec.x == 6, 'position q is wrong');
-        assert(new_position.vec.y == 4, 'position r is wrong');
+        let new_state: PlayerState = world.read_model(test_game_id);
+        assert(new_state.position.x == 6, 'position q is wrong');
+        assert(new_state.position.y == 4, 'position r is wrong');
     }
 
     #[test]
@@ -257,20 +280,23 @@ mod tests {
         let (contract_address, _) = world.dns(@"actions").unwrap();
         let actions_system = IActionsDispatcher { contract_address };
 
-        let edge_position = Position {
+        let test_game_id: u32 = 999;
+        let session = GameSession {
+            game_id: test_game_id,
             player: caller,
-            vec: Vec2 { x: 9, y: 5 }
+            is_active: true,
         };
-        world.write_model_test(@edge_position);
+        world.write_model_test(@session);
 
-        let moves = Moves {
-            player: caller,
+        let edge_state = PlayerState {
+            game_id: test_game_id,
+            position: Vec2 { x: 9, y: 5 },
             last_direction: Option::None,
             can_move: true,
         };
-        world.write_model_test(@moves);
+        world.write_model_test(@edge_state);
 
-        actions_system.move(Direction::East);
+        actions_system.move(test_game_id, Direction::East);
     }
 
     #[test]
@@ -288,22 +314,25 @@ mod tests {
         let (contract_address, _) = world.dns(@"actions").unwrap();
         let actions_system = IActionsDispatcher { contract_address };
 
-        let origin_position = Position {
+        let test_game_id: u32 = 999;
+        let session = GameSession {
+            game_id: test_game_id,
             player: caller,
-            vec: Vec2 { x: 0, y: 5 }
+            is_active: true,
         };
-        world.write_model_test(@origin_position);
+        world.write_model_test(@session);
 
-        let moves = Moves {
-            player: caller,
+        let origin_state = PlayerState {
+            game_id: test_game_id,
+            position: Vec2 { x: 0, y: 5 },
             last_direction: Option::None,
             can_move: true,
         };
-        world.write_model_test(@moves);
+        world.write_model_test(@origin_state);
 
         // This should fail gracefully with "Move is out of bounds"
         // With the old u32 implementation, this caused underflow
-        actions_system.move(Direction::West);
+        actions_system.move(test_game_id, Direction::West);
     }
 
     #[test]
@@ -321,22 +350,56 @@ mod tests {
         let (contract_address, _) = world.dns(@"actions").unwrap();
         let actions_system = IActionsDispatcher { contract_address };
 
-        let origin_position = Position {
+        let test_game_id: u32 = 999;
+        let session = GameSession {
+            game_id: test_game_id,
             player: caller,
-            vec: Vec2 { x: 5, y: 0 }
+            is_active: true,
         };
-        world.write_model_test(@origin_position);
+        world.write_model_test(@session);
 
-        let moves = Moves {
-            player: caller,
+        let origin_state = PlayerState {
+            game_id: test_game_id,
+            position: Vec2 { x: 5, y: 0 },
             last_direction: Option::None,
             can_move: true,
         };
-        world.write_model_test(@moves);
+        world.write_model_test(@origin_state);
 
         // This should fail gracefully with "Move is out of bounds"
         // With the old u32 implementation, this caused underflow
-        actions_system.move(Direction::NorthWest);
+        actions_system.move(test_game_id, Direction::NorthWest);
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    fn test_get_game_state() {
+        let caller: ContractAddress = 1.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        starknet::testing::set_contract_address(caller);
+        actions_system.spawn();
+
+        let game_id: u32 = 1;
+
+        // Read state to compare against
+        let state: PlayerState = world.read_model(game_id);
+
+        // Call view function
+        let game_state = actions_system.get_game_state(game_id);
+
+        assert(game_state.game_id == game_id, 'game_id wrong');
+        assert(game_state.player == caller, 'player wrong');
+        assert(game_state.position.x == state.position.x, 'position x wrong');
+        assert(game_state.position.y == state.position.y, 'position y wrong');
+        assert(game_state.can_move, 'can_move wrong');
+        assert(game_state.is_active, 'is_active wrong');
     }
 
 }

@@ -19,6 +19,7 @@ interface GameState {
   // Player identification
   playerAddress: string | null;
   isSpawned: boolean;
+  gameId: number | null;  // Current active game_id
 
   // Position state
   position: Position | null;
@@ -38,6 +39,7 @@ interface GameState {
   // Actions - Player Management
   setPlayerAddress: (address: string | null) => void;
   setIsSpawned: (spawned: boolean) => void;
+  setGameId: (gameId: number | null) => void;
 
   // Actions - Position Management
   setPosition: (position: Position | null) => void;
@@ -69,6 +71,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Initial state
   playerAddress: null,
   isSpawned: false,
+  gameId: null,
   position: null,
   positionHistory: new PositionHistory(50),
   optimisticPosition: null,
@@ -82,6 +85,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ playerAddress: address }),
 
   setIsSpawned: (spawned: boolean) => set({ isSpawned: spawned }),
+
+  setGameId: (gameId: number | null) => set({ gameId }),
 
   // Position Management Actions
   setPosition: (position: Position | null) =>
@@ -163,6 +168,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   resetGameState: () =>
     set({
       isSpawned: false,
+      gameId: null,
       position: null,
       positionHistory: new PositionHistory(50),
       optimisticPosition: null,
@@ -201,6 +207,8 @@ export const usePlayerAddress = () =>
   useGameStore((state) => state.playerAddress);
 
 export const useIsSpawned = () => useGameStore((state) => state.isSpawned);
+
+export const useGameId = () => useGameStore((state) => state.gameId);
 
 export const usePlayerPosition = () => useGameStore((state) => state.position);
 

@@ -1,36 +1,35 @@
 use starknet::ContractAddress;
 
+// Maps game_id → player address and tracks active state
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
-pub struct Moves {
+pub struct GameSession {
     #[key]
+    pub game_id: u32,
     pub player: ContractAddress,
+    pub is_active: bool,
+}
+
+// All mutable game state for a session
+#[derive(Copy, Drop, Serde, Debug)]
+#[dojo::model]
+pub struct PlayerState {
+    #[key]
+    pub game_id: u32,
+    pub position: Vec2,
     pub last_direction: Option<Direction>,
     pub can_move: bool,
 }
 
-#[derive(Drop, Serde, Debug)]
-#[dojo::model]
-pub struct DirectionsAvailable {
-    #[key]
+// Return struct for get_game_state view function (not a model)
+#[derive(Copy, Drop, Serde)]
+pub struct GameState {
+    pub game_id: u32,
     pub player: ContractAddress,
-    pub directions: Array<Direction>,
-}
-
-#[derive(Copy, Drop, Serde, Debug)]
-#[dojo::model]
-pub struct Position {
-    #[key]
-    pub player: ContractAddress,
-    pub vec: Vec2,
-}
-
-#[derive(Copy, Drop, Serde, Debug)]
-#[dojo::model]
-pub struct PositionCount {
-    #[key]
-    pub identity: ContractAddress,
-    pub position: Span<(u8, u128)>,
+    pub position: Vec2,
+    pub last_direction: Option<Direction>,
+    pub can_move: bool,
+    pub is_active: bool,
 }
 
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
