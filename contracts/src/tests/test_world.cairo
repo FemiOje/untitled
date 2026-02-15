@@ -9,6 +9,7 @@ mod tests {
     use untitled::models::{
         Direction, PlayerState, PlayerStats, Vec2,
         GameSession, TileOccupant, STARTING_HP, MAX_HP, COMBAT_DAMAGE, COMBAT_XP_REWARD,
+        EXPLORE_XP_REWARD,
         m_PlayerState, m_PlayerStats, m_GameSession, m_TileOccupant,
     };
     use untitled::systems::actions::{IActionsDispatcher, IActionsDispatcherTrait, actions};
@@ -933,6 +934,84 @@ mod tests {
         assert(game_state.max_hp == MAX_HP, 'gs max_hp wrong');
         assert(game_state.xp == 0, 'gs xp wrong');
         assert(game_state.hp <= game_state.max_hp, 'gs hp exceeds max');
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    fn test_move_to_empty_tile_grants_xp() {
+        let caller: ContractAddress = 0.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        // Set up player at (5,5) with 0 XP
+        let test_game_id: u32 = 999;
+        world.write_model_test(@GameSession {
+            game_id: test_game_id, player: caller, is_active: true,
+        });
+        world.write_model_test(@PlayerState {
+            game_id: test_game_id,
+            position: Vec2 { x: 5, y: 5 },
+            last_direction: Option::None,
+            can_move: true,
+        });
+        world.write_model_test(@PlayerStats {
+            game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
+        });
+        world.write_model_test(@TileOccupant { x: 5, y: 5, game_id: test_game_id });
+
+        // Move east to empty tile (6,5)
+        actions_system.move(test_game_id, Direction::East);
+
+        let stats: PlayerStats = world.read_model(test_game_id);
+        assert(stats.xp == EXPLORE_XP_REWARD, 'should gain explore xp');
+
+        // Move again to another empty tile (7,5)
+        actions_system.move(test_game_id, Direction::East);
+
+        let stats2: PlayerStats = world.read_model(test_game_id);
+        assert(stats2.xp == EXPLORE_XP_REWARD * 2, 'xp should accumulate');
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    fn test_xp_saturates_at_max_u32() {
+        let caller: ContractAddress = 0.try_into().unwrap();
+
+        let ndef = namespace_def();
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
+        world.sync_perms_and_inits(contract_defs());
+
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+
+        let max_u32: u32 = 0xFFFFFFFF;
+
+        // Set up player at (5,5) with XP near u32::MAX
+        let test_game_id: u32 = 999;
+        world.write_model_test(@GameSession {
+            game_id: test_game_id, player: caller, is_active: true,
+        });
+        world.write_model_test(@PlayerState {
+            game_id: test_game_id,
+            position: Vec2 { x: 5, y: 5 },
+            last_direction: Option::None,
+            can_move: true,
+        });
+        world.write_model_test(@PlayerStats {
+            game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: max_u32 - 3,
+        });
+        world.write_model_test(@TileOccupant { x: 5, y: 5, game_id: test_game_id });
+
+        // Move to empty tile — should saturate at u32::MAX, not panic
+        actions_system.move(test_game_id, Direction::East);
+
+        let stats: PlayerStats = world.read_model(test_game_id);
+        assert(stats.xp == max_u32, 'xp should saturate at max');
     }
 
     #[test]

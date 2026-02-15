@@ -13,7 +13,7 @@ pub mod actions {
     use dojo::model::ModelStorage;
     use untitled::models::{
         Vec2, GameSession, PlayerState, PlayerStats, TileOccupant, STARTING_HP, MAX_HP,
-        COMBAT_DAMAGE, COMBAT_XP_REWARD,
+        COMBAT_DAMAGE, COMBAT_XP_REWARD, EXPLORE_XP_REWARD,
     };
     use untitled::utils::hex::{get_neighbor, is_within_bounds};
     use starknet::{ContractAddress, get_caller_address, get_tx_info, get_block_timestamp};
@@ -159,7 +159,7 @@ pub mod actions {
 
                 if attacker_won {
                     // Winner (attacker): +XP, 0 damage
-                    attacker_stats.xp += COMBAT_XP_REWARD;
+                    add_xp(ref attacker_stats, COMBAT_XP_REWARD);
 
                     // Loser (defender): -HP, 0 XP
                     if defender_stats.hp <= COMBAT_DAMAGE {
@@ -222,7 +222,7 @@ pub mod actions {
                     }
                 } else {
                     // Winner (defender): +XP, 0 damage
-                    defender_stats.xp += COMBAT_XP_REWARD;
+                    add_xp(ref defender_stats, COMBAT_XP_REWARD);
 
                     // Loser (attacker): -HP, 0 XP
                     if attacker_stats.hp <= COMBAT_DAMAGE {
@@ -286,6 +286,11 @@ pub mod actions {
                 state.last_direction = Option::Some(direction);
                 world.write_model(@state);
 
+                // Award exploration XP
+                let mut stats: PlayerStats = world.read_model(game_id);
+                add_xp(ref stats, EXPLORE_XP_REWARD);
+                world.write_model(@stats);
+
                 // Emit move event
                 world.emit_event(@Moved { game_id, direction, position: next_vec });
             }
@@ -311,6 +316,15 @@ pub mod actions {
         }
     }
 
+
+    fn add_xp(ref stats: PlayerStats, amount: u32) {
+        let max: u32 = 0xFFFFFFFF;
+        if stats.xp > max - amount {
+            stats.xp = max;
+        } else {
+            stats.xp += amount;
+        }
+    }
 
     #[generate_trait]
     impl InternalImpl of InternalTrait {

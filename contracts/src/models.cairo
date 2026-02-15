@@ -5,6 +5,7 @@ pub const STARTING_HP: u32 = 10; //10 for testing (normal is 100 for prod)
 pub const MAX_HP: u32 = 100;
 pub const COMBAT_DAMAGE: u32 = 10;
 pub const COMBAT_XP_REWARD: u32 = 30;
+pub const EXPLORE_XP_REWARD: u32 = 10;
 
 // Maps game_id → player address and tracks active state
 #[derive(Copy, Drop, Serde, Debug)]
