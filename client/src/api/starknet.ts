@@ -27,6 +27,8 @@ export const useStarknetApi = () => {
     playerAddress: string
   ): Promise<Position | null> => {
     try {
+      const selector = hash.getSelectorFromName("get_player_position");
+
       const response = await fetch(currentNetworkConfig.rpcUrl, {
         method: "POST",
         headers: {
@@ -38,12 +40,10 @@ export const useStarknetApi = () => {
           params: [
             {
               contract_address: currentNetworkConfig.manifest.world.address,
-              entry_point_selector: num.toHex(
-                "0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e"
-              ), // get selector
+              entry_point_selector: selector,
               calldata: [playerAddress],
             },
-            "latest",
+            "pre_confirmed",
           ],
           id: 0,
         }),
@@ -79,6 +79,8 @@ export const useStarknetApi = () => {
     playerAddress: string
   ): Promise<Moves | null> => {
     try {
+      const selector = hash.getSelectorFromName("get_player_moves");
+
       const response = await fetch(currentNetworkConfig.rpcUrl, {
         method: "POST",
         headers: {
@@ -90,12 +92,10 @@ export const useStarknetApi = () => {
           params: [
             {
               contract_address: currentNetworkConfig.manifest.world.address,
-              entry_point_selector: num.toHex(
-                "0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e"
-              ), // get selector
+              entry_point_selector: selector,
               calldata: [playerAddress],
             },
-            "latest",
+            "pre_confirmed",
           ],
           id: 0,
         }),
@@ -190,7 +190,7 @@ export const useStarknetApi = () => {
               entry_point_selector: selector,
               calldata: [num.toHex(gameId)],
             },
-            "latest",
+            "pre_confirmed",
           ],
           id: 0,
         }),
@@ -198,7 +198,7 @@ export const useStarknetApi = () => {
 
       const data = await response.json();
 
-      // console.log("RPC response for getGameState:", data);
+      console.log("RPC response for getGameState:", JSON.stringify(data.result));
 
       if (!data?.result || data.result.length < 5) {
         console.warn("Invalid or empty response from get_game_state:", data);
@@ -232,22 +232,12 @@ export const useStarknetApi = () => {
       const canMove = parseInt(data.result[idx++], 16) === 1;
       const isActive = parseInt(data.result[idx++], 16) === 1;
 
-      // console.log("Parsed game state:", {
-      //   game_id: parsedGameId,
-      //   player,
-      //   position: { x: posX, y: posY },
-      //   last_direction: lastDirection,
-      //   can_move: canMove,
-      //   is_active: isActive,
-      // });
-
-      // console.log("🔍 Raw parsing details:", {
-      //   totalFields: data.result.length,
-      //   idx5_canMove: data.result[5],
-      //   idx6_isActive: data.result[6],
-      //   parsedCanMove: canMove,
-      //   parsedIsActive: isActive,
-      // });
+      // Player stats (hp, max_hp, xp) — added with combat system
+      console.log("Parsing stats at idx:", idx, "remaining fields:", data.result.slice(idx));
+      const hp = parseInt(data.result[idx++], 16) || 0;
+      const maxHp = parseInt(data.result[idx++], 16) || 0;
+      const xp = parseInt(data.result[idx++], 16) || 0;
+      console.log("Parsed stats:", { hp, maxHp, xp });
 
       return {
         game_id: parsedGameId,
@@ -256,6 +246,9 @@ export const useStarknetApi = () => {
         last_direction: lastDirection,
         can_move: canMove,
         is_active: isActive,
+        hp,
+        max_hp: maxHp,
+        xp,
       };
     } catch (error) {
       console.error("Error fetching game state:", error);

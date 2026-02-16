@@ -18,6 +18,8 @@ interface GameState {
   // Player identification
   playerAddress: string | null;
   isSpawned: boolean;
+  isDead: boolean;
+  deathXp: number;
   gameId: number | null;  // Current active game_id
 
   // Position state
@@ -27,6 +29,11 @@ interface GameState {
 
   // Moves state
   moves: Moves | null;
+
+  // Player stats
+  hp: number;
+  maxHp: number;
+  xp: number;
 
   // Game events log
   eventLog: GameEvent[];
@@ -38,6 +45,7 @@ interface GameState {
   // Actions - Player Management
   setPlayerAddress: (address: string | null) => void;
   setIsSpawned: (spawned: boolean) => void;
+  setIsDead: (dead: boolean, xp?: number) => void;
   setGameId: (gameId: number | null) => void;
 
   // Actions - Position Management
@@ -50,6 +58,9 @@ interface GameState {
   setMoves: (moves: Moves | null) => void;
   updateCanMove: (canMove: boolean) => void;
   updateLastDirection: (direction: Direction | null) => void;
+
+  // Actions - Stats Management
+  setStats: (hp: number, maxHp: number, xp: number) => void;
 
   // Actions - Event Management
   addEvent: (event: GameEvent) => void;
@@ -70,11 +81,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Initial state
   playerAddress: null,
   isSpawned: false,
+  isDead: false,
+  deathXp: 0,
   gameId: null,
   position: null,
   positionHistory: new PositionHistory(50),
   optimisticPosition: null,
   moves: null,
+  hp: 0,
+  maxHp: 0,
+  xp: 0,
   eventLog: [],
   isInitializing: false,
   isSyncing: false,
@@ -84,6 +100,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ playerAddress: address }),
 
   setIsSpawned: (spawned: boolean) => set({ isSpawned: spawned }),
+
+  setIsDead: (dead: boolean, xp?: number) =>
+    set({ isDead: dead, deathXp: xp ?? 0 }),
 
   setGameId: (gameId: number | null) => set({ gameId }),
 
@@ -156,6 +175,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       };
     }),
 
+  // Stats Management Actions
+  setStats: (hp: number, maxHp: number, xp: number) =>
+    set({ hp, maxHp, xp }),
+
   // Event Management Actions
   addEvent: (event: GameEvent) =>
     set((state) => ({
@@ -173,11 +196,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   resetGameState: () =>
     set({
       isSpawned: false,
+      isDead: false,
+      deathXp: 0,
       gameId: null,
       position: null,
       positionHistory: new PositionHistory(50),
       optimisticPosition: null,
       moves: null,
+      hp: 0,
+      maxHp: 0,
+      xp: 0,
       eventLog: [],
       isInitializing: false,
       isSyncing: false,
@@ -213,6 +241,9 @@ export const usePlayerAddress = () =>
 
 export const useIsSpawned = () => useGameStore((state) => state.isSpawned);
 
+export const useIsDead = () => useGameStore((state) => state.isDead);
+export const useDeathXp = () => useGameStore((state) => state.deathXp);
+
 export const useGameId = () => useGameStore((state) => state.gameId);
 
 export const usePlayerPosition = () => useGameStore((state) => state.position);
@@ -224,6 +255,10 @@ export const usePlayerMoves = () => useGameStore((state) => state.moves);
 
 export const useCanPlayerMove = () =>
   useGameStore((state) => state.canPlayerMove());
+
+export const usePlayerHp = () => useGameStore((state) => state.hp);
+export const usePlayerMaxHp = () => useGameStore((state) => state.maxHp);
+export const usePlayerXp = () => useGameStore((state) => state.xp);
 
 export const useEventLog = () => useGameStore((state) => state.eventLog);
 

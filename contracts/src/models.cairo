@@ -1,5 +1,12 @@
 use starknet::ContractAddress;
 
+// Combat & stat constants
+pub const STARTING_HP: u32 = 10; //10 for testing (normal is 100 for prod)
+pub const MAX_HP: u32 = 100;
+pub const COMBAT_DAMAGE: u32 = 10;
+pub const COMBAT_XP_REWARD: u32 = 30;
+pub const EXPLORE_XP_REWARD: u32 = 10;
+
 // Maps game_id → player address and tracks active state
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
@@ -21,6 +28,28 @@ pub struct PlayerState {
     pub can_move: bool,
 }
 
+// Reverse lookup: who occupies a given tile? (0 = empty)
+#[derive(Copy, Drop, Serde, Debug)]
+#[dojo::model]
+pub struct TileOccupant {
+    #[key]
+    pub x: i32,
+    #[key]
+    pub y: i32,
+    pub game_id: u32,
+}
+
+// Player combat stats (separate from spatial state for ECS cleanliness)
+#[derive(Copy, Drop, Serde, Debug)]
+#[dojo::model]
+pub struct PlayerStats {
+    #[key]
+    pub game_id: u32,
+    pub hp: u32,
+    pub max_hp: u32,
+    pub xp: u32,
+}
+
 // Return struct for get_game_state view function (not a model)
 #[derive(Copy, Drop, Serde)]
 pub struct GameState {
@@ -30,6 +59,9 @@ pub struct GameState {
     pub last_direction: Option<Direction>,
     pub can_move: bool,
     pub is_active: bool,
+    pub hp: u32,
+    pub max_hp: u32,
+    pub xp: u32,
 }
 
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]

@@ -72,18 +72,25 @@ export interface GameState {
   last_direction: Direction | null;
   can_move: boolean;
   is_active: boolean;
+  hp: number;            // Current health points
+  max_hp: number;        // Maximum health points cap
+  xp: number;            // Experience points
 }
 
 /**
  * Game Event types for event processing
  */
 export interface GameEvent {
-  type: 'spawned' | 'moved' | 'position_update' | 'unknown';
+  type: 'spawned' | 'moved' | 'combat_result' | 'position_update' | 'unknown';
   gameId?: number;  // game_id from event (u32)
   player?: string;
   position?: Position;
   direction?: Direction;
   moves?: Moves;
+  // Combat fields (only present when type === 'combat_result')
+  combatWon?: boolean;
+  defenderGameId?: number;
+  defenderPosition?: Vec2;
 }
 
 /**

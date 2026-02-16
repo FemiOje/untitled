@@ -17,7 +17,6 @@ import { num } from "starknet";
 import { useController } from "./controller";
 import { useGameStore, initializePlayerState } from "@/stores/gameStore";
 import { useUIStore } from "@/stores/uiStore";
-import { usePlayerEntitySync, useRefreshPlayerState } from "@/dojo/useEntitySync";
 import { useStarknetApi } from "@/api/starknet";
 import { GameEvent } from "@/types/game";
 import { debugLog } from "@/utils/helpers";
@@ -52,7 +51,6 @@ const normalizeAddress = (addr: string): string => {
 export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
   const { address } = useController();
   const { getGameState } = useStarknetApi();
-  const { refreshState } = useRefreshPlayerState();
 
   const {
     playerAddress,
@@ -63,6 +61,8 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
     setIsSpawned,
     setGameId,
     setIsInitializing,
+    setStats,
+    setIsDead,
     addEvent,
     resetGameState,
   } = useGameStore();
@@ -70,9 +70,6 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
   const { setError, clearError } = useUIStore();
 
   const [isInitialized, setIsInitialized] = useState(false);
-
-  // Enable entity sync when player is connected
-  usePlayerEntitySync();
 
   /**
    * Initialize game state when wallet connects
@@ -139,10 +136,13 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
                 last_direction: gameState.last_direction,
                 can_move: gameState.can_move,
               });
+              setStats(gameState.hp, gameState.max_hp, gameState.xp);
               setIsSpawned(gameState.is_active);
 
-              // Trigger entity sync refresh
-              await refreshState();
+              // Detect death: player has a game but is no longer active with 0 HP
+              if (!gameState.is_active && gameState.hp === 0) {
+                setIsDead(true, gameState.xp);
+              }
 
               setIsInitialized(true);
               // debugLog("Game initialization complete");
@@ -177,8 +177,9 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
     setPosition,
     setMoves,
     setIsSpawned,
+    setIsDead,
     setIsInitializing,
-    refreshState,
+    setStats,
     clearError,
     setError,
   ]);
@@ -222,6 +223,16 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
           }
           break;
 
+        case "combat_result":
+          if (event.position) {
+            setPosition(event.position);
+            debugLog(
+              event.combatWon ? "Won combat, moved to" : "Lost combat, stayed at",
+              event.position.vec
+            );
+          }
+          break;
+
         case "position_update":
           if (event.position) {
             setPosition(event.position);
@@ -252,7 +263,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
     }
 
     try {
-      debugLog("Manually refreshing game state");
+      // debugLog("Manually refreshing game state");
 
       // Fetch fresh state with single RPC call
       const gameState = await getGameState(gameId);
@@ -273,16 +284,19 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
             last_direction: gameState.last_direction,
             can_move: gameState.can_move,
           });
+          setStats(gameState.hp, gameState.max_hp, gameState.xp);
           setIsSpawned(gameState.is_active);
 
-          // Trigger entity sync
-          await refreshState();
+          // Detect death
+          if (!gameState.is_active && gameState.hp === 0) {
+            setIsDead(true, gameState.xp);
+          }
 
           debugLog("Game state refreshed successfully");
         } else {
-          console.warn("Game ownership mismatch during refresh");
-          console.warn("Game player:", gameState.player, "→", gamePlayer);
-          console.warn("Connected:", address, "→", connectedAddr);
+          // console.warn("Game ownership mismatch during refresh");
+          // console.warn("Game player:", gameState.player, "→", gamePlayer);
+          // console.warn("Connected:", address, "→", connectedAddr);
           setError("Game ownership validation failed");
         }
       } else {
@@ -300,7 +314,8 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
     setPosition,
     setMoves,
     setIsSpawned,
-    refreshState,
+    setIsDead,
+    setStats,
     setError,
   ]);
 
