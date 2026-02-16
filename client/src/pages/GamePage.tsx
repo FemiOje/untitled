@@ -47,16 +47,6 @@ export default function GamePage() {
         await refreshGameState();
     }, [refreshGameState]);
 
-    // useEffect(() => {
-    //     console.log("GamePage state:", {
-    //         isSpawned,
-    //         blockchainPosition,
-    //         canMove,
-    //         moves,
-    //         isLoading
-    //     });
-    // }, [isSpawned, blockchainPosition, canMove, moves, isLoading]);
-
     // URL validation and ownership check
     useEffect(() => {
         // Skip if already validated or currently validating

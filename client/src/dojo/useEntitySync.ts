@@ -108,19 +108,6 @@ export const usePlayerMovesSync = () => {
   const { setMoves, setIsSyncing } = useGameStore();
   const lastSyncRef = useRef<number>(0);
 
-  // Subscribe to Moves entity for this player
-  // useEntityQuery(
-  //   new ToriiQueryBuilder()
-  //     .withClause(
-  //       KeysClause(
-  //         ["untitled-Moves"],
-  //         [address || "0x0"],
-  //         "FixedLen"
-  //       ).build()
-  //     )
-  //     .includeHashedKeys()
-  // );
-
   // Process entity updates
   useEffect(() => {
     if (!address || !entities) return;

@@ -27,6 +27,8 @@ export const useStarknetApi = () => {
     playerAddress: string
   ): Promise<Position | null> => {
     try {
+      const selector = hash.getSelectorFromName("get_player_position");
+
       const response = await fetch(currentNetworkConfig.rpcUrl, {
         method: "POST",
         headers: {
@@ -38,12 +40,10 @@ export const useStarknetApi = () => {
           params: [
             {
               contract_address: currentNetworkConfig.manifest.world.address,
-              entry_point_selector: num.toHex(
-                "0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e"
-              ), // get selector
+              entry_point_selector: selector,
               calldata: [playerAddress],
             },
-            "latest",
+            "pre_confirmed",
           ],
           id: 0,
         }),
@@ -79,6 +79,8 @@ export const useStarknetApi = () => {
     playerAddress: string
   ): Promise<Moves | null> => {
     try {
+      const selector = hash.getSelectorFromName("get_player_moves");
+
       const response = await fetch(currentNetworkConfig.rpcUrl, {
         method: "POST",
         headers: {
@@ -90,12 +92,10 @@ export const useStarknetApi = () => {
           params: [
             {
               contract_address: currentNetworkConfig.manifest.world.address,
-              entry_point_selector: num.toHex(
-                "0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e"
-              ), // get selector
+              entry_point_selector: selector,
               calldata: [playerAddress],
             },
-            "latest",
+            "pre_confirmed",
           ],
           id: 0,
         }),
