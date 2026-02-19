@@ -34,7 +34,7 @@
   "contracts": [
     {
       "address": "0x364aba833da4b99c418e62a220b69eed039fcb4338b175b59ae0f194b3544c9",
-      "class_hash": "0x18bd6f03983187fd5e8bff5feeee0a8852b202580c01efa206eb35bace16461",
+      "class_hash": "0x267d2e42f4b7b5ce4cdea23cbed42e11cd96a45bd2aba119d31b5dcee8ccca0",
       "init_calldata": [],
       "tag": "untitled-game_systems",
       "selector": "0x4b9982c93d239b953e976f12f77152699704606d385e04b78d305470ff49ca6",
@@ -193,6 +193,48 @@
       "class_hash": "0x5707dcefb86ad77b20002fd5a8219850980aedf24f74d7718298e8edc8bf918",
       "tag": "untitled-CombatResult",
       "selector": "0x63b0a0d3d1e3c91574e4f5e03480f649fbe3fdef17316bb1f5a2c707c317cd8"
+    },
+    {
+      "members": [
+        {
+          "name": "game_id",
+          "type": "core::integer::u32",
+          "key": true
+        },
+        {
+          "name": "is_gift",
+          "type": "core::bool",
+          "key": false
+        },
+        {
+          "name": "outcome",
+          "type": "core::integer::u8",
+          "key": false
+        },
+        {
+          "name": "hp_after",
+          "type": "core::integer::u32",
+          "key": false
+        },
+        {
+          "name": "max_hp_after",
+          "type": "core::integer::u32",
+          "key": false
+        },
+        {
+          "name": "xp_after",
+          "type": "core::integer::u32",
+          "key": false
+        },
+        {
+          "name": "player_died",
+          "type": "core::bool",
+          "key": false
+        }
+      ],
+      "class_hash": "0x5e7d91392035107ea40df534a678927498d6c2447729b670f8cc5795d49d675",
+      "tag": "untitled-EncounterOccurred",
+      "selector": "0x6290c33e40f5fb1fbb317e39dfa0df367d6d8a997b5aac7bea0962856f325c"
     },
     {
       "members": [
@@ -2517,6 +2559,70 @@
       ]
     },
     {
+      "type": "struct",
+      "name": "untitled::systems::game::contracts::game_systems::EncounterOccurred",
+      "members": [
+        {
+          "name": "game_id",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "is_gift",
+          "type": "core::bool"
+        },
+        {
+          "name": "outcome",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "hp_after",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "max_hp_after",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "xp_after",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "player_died",
+          "type": "core::bool"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "untitled::systems::game::contracts::game_systems::EncounterOccurredValue",
+      "members": [
+        {
+          "name": "is_gift",
+          "type": "core::bool"
+        },
+        {
+          "name": "outcome",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "hp_after",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "max_hp_after",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "xp_after",
+          "type": "core::integer::u32"
+        },
+        {
+          "name": "player_died",
+          "type": "core::bool"
+        }
+      ]
+    },
+    {
       "type": "event",
       "name": "untitled::systems::game::contracts::game_systems::Event",
       "kind": "enum",
@@ -2664,6 +2770,12 @@
     {
       "type": "event",
       "name": "untitled::systems::game::contracts::game_systems::e_CombatResult::Event",
+      "kind": "enum",
+      "variants": []
+    },
+    {
+      "type": "event",
+      "name": "untitled::systems::game::contracts::game_systems::e_EncounterOccurred::Event",
       "kind": "enum",
       "variants": []
     },

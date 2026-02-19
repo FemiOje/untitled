@@ -50,6 +50,17 @@ export interface CombatResult {
 	loser_died: boolean;
 }
 
+// Type definition for `untitled::systems::game::contracts::game_systems::EncounterOccurred` struct
+export interface EncounterOccurred {
+	game_id: BigNumberish;
+	is_gift: boolean;
+	outcome: BigNumberish;
+	hp_after: BigNumberish;
+	max_hp_after: BigNumberish;
+	xp_after: BigNumberish;
+	player_died: boolean;
+}
+
 // Type definition for `untitled::systems::game::contracts::game_systems::Moved` struct
 export interface Moved {
 	game_id: BigNumberish;
@@ -112,6 +123,7 @@ export interface SchemaType extends ISchemaType {
 		TileOccupant: TileOccupant,
 		Vec2: Vec2,
 		CombatResult: CombatResult,
+		EncounterOccurred: EncounterOccurred,
 		Moved: Moved,
 		NeighborsRevealed: NeighborsRevealed,
 		PlayerDied: PlayerDied,
@@ -156,6 +168,15 @@ export const schema: SchemaType = {
 			damage_dealt: 0,
 			xp_awarded: 0,
 			loser_died: false,
+		},
+		EncounterOccurred: {
+			game_id: 0,
+			is_gift: false,
+			outcome: 0,
+			hp_after: 0,
+			max_hp_after: 0,
+			xp_after: 0,
+			player_died: false,
 		},
 		Moved: {
 			game_id: 0,
@@ -205,6 +226,7 @@ export enum ModelsMapping {
 	TileOccupant = 'untitled-TileOccupant',
 	Vec2 = 'untitled-Vec2',
 	CombatResult = 'untitled-CombatResult',
+	EncounterOccurred = 'untitled-EncounterOccurred',
 	Moved = 'untitled-Moved',
 	NeighborsRevealed = 'untitled-NeighborsRevealed',
 	PlayerDied = 'untitled-PlayerDied',
