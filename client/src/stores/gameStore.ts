@@ -20,6 +20,7 @@ interface GameState {
   isSpawned: boolean;
   isDead: boolean;
   deathXp: number;
+  deathReason: string | null;
   gameId: number | null;  // Current active game_id
 
   // Position state
@@ -48,7 +49,7 @@ interface GameState {
   // Actions - Player Management
   setPlayerAddress: (address: string | null) => void;
   setIsSpawned: (spawned: boolean) => void;
-  setIsDead: (dead: boolean, xp?: number) => void;
+  setIsDead: (dead: boolean, xp?: number, reason?: string) => void;
   setGameId: (gameId: number | null) => void;
 
   // Actions - Position Management
@@ -89,6 +90,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   isSpawned: false,
   isDead: false,
   deathXp: 0,
+  deathReason: null,
   gameId: null,
   position: null,
   positionHistory: new PositionHistory(50),
@@ -108,8 +110,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setIsSpawned: (spawned: boolean) => set({ isSpawned: spawned }),
 
-  setIsDead: (dead: boolean, xp?: number) =>
-    set({ isDead: dead, deathXp: xp ?? 0 }),
+  setIsDead: (dead: boolean, xp?: number, reason?: string) =>
+    set({ isDead: dead, deathXp: xp ?? 0, deathReason: reason ?? null }),
 
   setGameId: (gameId: number | null) => set({ gameId }),
 
@@ -208,6 +210,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       isSpawned: false,
       isDead: false,
       deathXp: 0,
+      deathReason: null,
       gameId: null,
       position: null,
       positionHistory: new PositionHistory(50),
@@ -254,6 +257,7 @@ export const useIsSpawned = () => useGameStore((state) => state.isSpawned);
 
 export const useIsDead = () => useGameStore((state) => state.isDead);
 export const useDeathXp = () => useGameStore((state) => state.deathXp);
+export const useDeathReason = () => useGameStore((state) => state.deathReason);
 
 export const useGameId = () => useGameStore((state) => state.gameId);
 

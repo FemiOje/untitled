@@ -143,7 +143,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
 
               // Detect death: player has a game but is no longer active with 0 HP
               if (!gameState.is_active && gameState.hp === 0) {
-                setIsDead(true, gameState.xp);
+                setIsDead(true, gameState.xp, "Fell in a previous battle");
               }
 
               setIsInitialized(true);
@@ -300,7 +300,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
 
           // Detect death
           if (!gameState.is_active && gameState.hp === 0) {
-            setIsDead(true, gameState.xp);
+            setIsDead(true, gameState.xp, "Slain by another player");
           }
 
           debugLog("Game state refreshed successfully");

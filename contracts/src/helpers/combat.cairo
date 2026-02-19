@@ -1,8 +1,8 @@
 use dojo::model::ModelStorage;
-use starknet::{ContractAddress, get_tx_info, get_block_timestamp};
+use starknet::{ContractAddress, get_block_timestamp, get_tx_info};
 use untitled::models::{
-    Direction, Vec2, GameSession, PlayerState, PlayerStats, TileOccupant, COMBAT_DAMAGE,
-    COMBAT_XP_REWARD,
+    COMBAT_DAMAGE, COMBAT_XP_REWARD, Direction, GameSession, PlayerState, PlayerStats, TileOccupant,
+    Vec2,
 };
 use untitled::utils::hex::get_neighbor;
 
@@ -18,9 +18,7 @@ pub struct CombatOutcome {
 }
 
 /// Checks whether the tile's occupant is an active player.
-pub fn has_active_defender(
-    ref world: dojo::world::WorldStorage, defender_game_id: u32,
-) -> bool {
+pub fn has_active_defender(ref world: dojo::world::WorldStorage, defender_game_id: u32) -> bool {
     if defender_game_id != 0 {
         let defender_session: GameSession = world.read_model(defender_game_id);
         defender_session.is_active
@@ -77,10 +75,7 @@ pub fn resolve_combat(
             state.position = next_vec;
             state.last_direction = Option::Some(direction);
             world.write_model(@TileOccupant { x: next_vec.x, y: next_vec.y, game_id });
-            world
-                .write_model(
-                    @TileOccupant { x: old_position.x, y: old_position.y, game_id: 0 },
-                );
+            world.write_model(@TileOccupant { x: old_position.x, y: old_position.y, game_id: 0 });
             world.write_model(@state);
         } else {
             let mut defender_state: PlayerState = world.read_model(defender_game_id);
@@ -124,19 +119,28 @@ pub fn resolve_combat(
     CombatOutcome {
         attacker_won,
         loser_died,
-        attacker_position: if attacker_won { next_vec } else { old_position },
-        defender_position: if attacker_won { old_position } else { next_vec },
-        death_position: if attacker_won { next_vec } else { old_position },
+        attacker_position: if attacker_won {
+            next_vec
+        } else {
+            old_position
+        },
+        defender_position: if attacker_won {
+            old_position
+        } else {
+            next_vec
+        },
+        death_position: if attacker_won {
+            next_vec
+        } else {
+            old_position
+        },
     }
 }
 
 /// Cleans up a dead player: clears tile, deactivates session, disables movement.
 /// Does NOT emit PlayerDied event — the caller is responsible for that.
 fn handle_player_death(
-    ref world: dojo::world::WorldStorage,
-    game_id: u32,
-    position: Vec2,
-    killed_by: u32,
+    ref world: dojo::world::WorldStorage, game_id: u32, position: Vec2, killed_by: u32,
 ) {
     // Clear tile occupancy
     world.write_model(@TileOccupant { x: position.x, y: position.y, game_id: 0 });

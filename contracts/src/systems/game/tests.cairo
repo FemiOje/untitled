@@ -3,15 +3,13 @@ mod tests {
     use dojo::model::{ModelStorage, ModelStorageTest};
     // use dojo::world::WorldStorageTrait;
     use untitled::models::{
-        Direction, PlayerState, PlayerStats, Vec2, GameSession, TileOccupant, STARTING_HP, MAX_HP,
-        COMBAT_DAMAGE, COMBAT_XP_REWARD, EXPLORE_XP_REWARD,
+        COMBAT_DAMAGE, COMBAT_XP_REWARD, Direction, EXPLORE_XP_REWARD, GameSession, MAX_HP,
+        PlayerState, PlayerStats, STARTING_HP, TileOccupant, Vec2,
     };
-    use untitled::systems::game::contracts::{
-        // IGameSystemsDispatcher,
-        IGameSystemsDispatcherTrait
-    };
+    use untitled::systems::game::contracts::{// IGameSystemsDispatcher,
+    IGameSystemsDispatcherTrait};
     use untitled::utils::hex::is_within_bounds;
-    use untitled::utils::setup::{deploy_world, PLAYER_ADDR, ATTACKER_ADDR, DEFENDER_ADDR};
+    use untitled::utils::setup::{ATTACKER_ADDR, DEFENDER_ADDR, PLAYER_ADDR, deploy_world};
     // use starknet::ContractAddress;
 
     // ------------------------------------------ //
@@ -136,7 +134,9 @@ mod tests {
         let new_state: PlayerState = world.read_model(game_id);
         let east_dir_felt: felt252 = Direction::East.into();
 
-        assert(new_state.last_direction.unwrap().into() == east_dir_felt, 'last direction is wrong');
+        assert(
+            new_state.last_direction.unwrap().into() == east_dir_felt, 'last direction is wrong',
+        );
         assert(new_state.position.x == initial_state.position.x + 1, 'position q is wrong');
         assert(new_state.position.y == initial_state.position.y, 'position r is wrong');
     }
@@ -148,15 +148,19 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
 
         game.move(test_game_id, Direction::NorthEast);
 
@@ -173,15 +177,19 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: 10, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: 10, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
 
         game.move(test_game_id, Direction::East);
     }
@@ -194,15 +202,19 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: -10, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: -10, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
 
         game.move(test_game_id, Direction::West);
     }
@@ -215,15 +227,19 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: 0, y: -10 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: 0, y: -10 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
 
         game.move(test_game_id, Direction::NorthWest);
     }
@@ -235,15 +251,19 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: test_game_id });
 
         game.move(test_game_id, Direction::East);
@@ -262,21 +282,26 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let player_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: player_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: player_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(@GameSession { game_id: player_id, player: caller, is_active: true });
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: player_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: player_id });
 
         let stale_id: u32 = 99;
-        world.write_model_test(@GameSession {
-            game_id: stale_id, player: 0xdead.try_into().unwrap(), is_active: false,
-        });
+        world
+            .write_model_test(
+                @GameSession {
+                    game_id: stale_id, player: 0xdead.try_into().unwrap(), is_active: false,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: stale_id });
 
         game.move(player_id, Direction::East);
@@ -345,34 +370,44 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let attacker_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: attacker_id, player: attacker_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: attacker_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: attacker_id, player: attacker_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: attacker_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: attacker_id });
-        world.write_model_test(@PlayerStats {
-            game_id: attacker_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @PlayerStats { game_id: attacker_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
 
         let defender_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: defender_id, player: defender_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: defender_id,
-            position: Vec2 { x: 1, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: defender_id, player: defender_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: defender_id,
+                    position: Vec2 { x: 1, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: defender_id });
-        world.write_model_test(@PlayerStats {
-            game_id: defender_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @PlayerStats { game_id: defender_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
 
         starknet::testing::set_contract_address(attacker_addr);
         game.move(attacker_id, Direction::East);
@@ -386,8 +421,7 @@ mod tests {
         let atk_session: GameSession = world.read_model(attacker_id);
         let def_session: GameSession = world.read_model(defender_id);
 
-        let attacker_at_dest = attacker_state.position.x == 1
-            && attacker_state.position.y == 0;
+        let attacker_at_dest = attacker_state.position.x == 1 && attacker_state.position.y == 0;
 
         if attacker_at_dest {
             if !def_session.is_active {
@@ -428,33 +462,43 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let attacker_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: attacker_id, player: attacker_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: attacker_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: attacker_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: attacker_id, player: attacker_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: attacker_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: attacker_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: attacker_id });
 
         let defender_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: defender_id, player: defender_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: defender_id,
-            position: Vec2 { x: 1, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: defender_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: defender_id, player: defender_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: defender_id,
+                    position: Vec2 { x: 1, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: defender_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: defender_id });
 
         starknet::testing::set_contract_address(attacker_addr);
@@ -491,33 +535,43 @@ mod tests {
         let low_hp: u32 = 5;
 
         let attacker_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: attacker_id, player: attacker_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: attacker_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: attacker_id, hp: low_hp, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: attacker_id, player: attacker_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: attacker_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: attacker_id, hp: low_hp, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: attacker_id });
 
         let defender_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: defender_id, player: defender_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: defender_id,
-            position: Vec2 { x: 1, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: defender_id, hp: low_hp, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: defender_id, player: defender_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: defender_id,
+                    position: Vec2 { x: 1, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: defender_id, hp: low_hp, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: defender_id });
 
         starknet::testing::set_contract_address(attacker_addr);
@@ -558,33 +612,43 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let attacker_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: attacker_id, player: attacker_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: attacker_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: attacker_id, hp: COMBAT_DAMAGE, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: attacker_id, player: attacker_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: attacker_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: attacker_id, hp: COMBAT_DAMAGE, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: attacker_id });
 
         let defender_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: defender_id, player: defender_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: defender_id,
-            position: Vec2 { x: 1, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: defender_id, hp: COMBAT_DAMAGE, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: defender_id, player: defender_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: defender_id,
+                    position: Vec2 { x: 1, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: defender_id, hp: COMBAT_DAMAGE, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: defender_id });
 
         starknet::testing::set_contract_address(attacker_addr);
@@ -614,18 +678,17 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let dead_id: u32 = 42;
-        world.write_model_test(@GameSession {
-            game_id: dead_id, player: caller, is_active: false,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: dead_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: false,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: dead_id, hp: 0, max_hp: MAX_HP, xp: 0,
-        });
+        world.write_model_test(@GameSession { game_id: dead_id, player: caller, is_active: false });
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: dead_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: false,
+                },
+            );
+        world.write_model_test(@PlayerStats { game_id: dead_id, hp: 0, max_hp: MAX_HP, xp: 0 });
 
         game.move(dead_id, Direction::East);
     }
@@ -638,33 +701,43 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let attacker_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: attacker_id, player: attacker_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: attacker_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: attacker_id, hp: MAX_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: attacker_id, player: attacker_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: attacker_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: attacker_id, hp: MAX_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: attacker_id });
 
         let defender_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: defender_id, player: defender_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: defender_id,
-            position: Vec2 { x: 1, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: defender_id, hp: MAX_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: defender_id, player: defender_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: defender_id,
+                    position: Vec2 { x: 1, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: defender_id, hp: MAX_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: defender_id });
 
         starknet::testing::set_contract_address(attacker_addr);
@@ -697,18 +770,23 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: test_game_id });
 
         let game_state = game.get_game_state(test_game_id);
@@ -724,31 +802,38 @@ mod tests {
 
         // Player at (0, 0)
         let player_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: player_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: player_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(@GameSession { game_id: player_id, player: caller, is_active: true });
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: player_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: player_id });
 
         // Active neighbor to the East at (1, 0)
         let neighbor_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: neighbor_id, player: defender_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: neighbor_id,
-            position: Vec2 { x: 1, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: neighbor_id, player: defender_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: neighbor_id,
+                    position: Vec2 { x: 1, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: neighbor_id });
 
         let game_state = game.get_game_state(player_id);
@@ -765,32 +850,37 @@ mod tests {
 
         // Player at (0, 0)
         let player_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: player_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: player_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(@GameSession { game_id: player_id, player: caller, is_active: true });
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: player_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: player_id });
 
         // Active neighbor to the East at (1, 0)
         let east_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: east_id, player: defender_addr, is_active: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: east_id, player: defender_addr, is_active: true },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: east_id });
 
         // Active neighbor to the West at (-1, 0)
         let west_id: u32 = 30;
-        world.write_model_test(@GameSession {
-            game_id: west_id, player: defender_addr, is_active: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: west_id, player: defender_addr, is_active: true },
+            );
         world.write_model_test(@TileOccupant { x: -1, y: 0, game_id: west_id });
 
         let game_state = game.get_game_state(player_id);
@@ -807,25 +897,29 @@ mod tests {
 
         // Player at (0, 0)
         let player_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: player_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: player_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(@GameSession { game_id: player_id, player: caller, is_active: true });
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: player_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: player_id });
 
         // Inactive neighbor to the East at (1, 0)
         let stale_id: u32 = 99;
-        world.write_model_test(@GameSession {
-            game_id: stale_id, player: defender_addr, is_active: false,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: stale_id, player: defender_addr, is_active: false },
+            );
         world.write_model_test(@TileOccupant { x: 1, y: 0, game_id: stale_id });
 
         let game_state = game.get_game_state(player_id);
@@ -841,31 +935,38 @@ mod tests {
 
         // Player at (0, 0)
         let player_id: u32 = 10;
-        world.write_model_test(@GameSession {
-            game_id: player_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: player_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(@GameSession { game_id: player_id, player: caller, is_active: true });
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: player_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: player_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: player_id });
 
         // Place active neighbor at (2, 0) - not adjacent to (0,0) but adjacent to (1,0)
         let neighbor_id: u32 = 20;
-        world.write_model_test(@GameSession {
-            game_id: neighbor_id, player: defender_addr, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: neighbor_id,
-            position: Vec2 { x: 2, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: neighbor_id, player: defender_addr, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: neighbor_id,
+                    position: Vec2 { x: 2, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 2, y: 0, game_id: neighbor_id });
 
         // Before move: no occupied neighbors at (0,0)
@@ -891,18 +992,23 @@ mod tests {
         let (mut world, game) = deploy_world();
 
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats { game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: test_game_id });
 
         game.move(test_game_id, Direction::East);
@@ -922,18 +1028,25 @@ mod tests {
 
         let max_u32: u32 = 0xFFFFFFFF;
         let test_game_id: u32 = 999;
-        world.write_model_test(@GameSession {
-            game_id: test_game_id, player: caller, is_active: true,
-        });
-        world.write_model_test(@PlayerState {
-            game_id: test_game_id,
-            position: Vec2 { x: 0, y: 0 },
-            last_direction: Option::None,
-            can_move: true,
-        });
-        world.write_model_test(@PlayerStats {
-            game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: max_u32 - 3,
-        });
+        world
+            .write_model_test(
+                @GameSession { game_id: test_game_id, player: caller, is_active: true },
+            );
+        world
+            .write_model_test(
+                @PlayerState {
+                    game_id: test_game_id,
+                    position: Vec2 { x: 0, y: 0 },
+                    last_direction: Option::None,
+                    can_move: true,
+                },
+            );
+        world
+            .write_model_test(
+                @PlayerStats {
+                    game_id: test_game_id, hp: STARTING_HP, max_hp: MAX_HP, xp: max_u32 - 3,
+                },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: test_game_id });
 
         game.move(test_game_id, Direction::East);
