@@ -3,13 +3,9 @@ use dojo_cairo_test::{
     ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
     spawn_test_world,
 };
-use untitled::models::{
-    m_PlayerState, m_PlayerStats, m_GameSession, m_TileOccupant,
-};
-use untitled::systems::game::contracts::{
-    IGameSystemsDispatcher, game_systems,
-};
 use starknet::ContractAddress;
+use untitled::models::{m_GameSession, m_PlayerState, m_PlayerStats, m_TileOccupant};
+use untitled::systems::game::contracts::{IGameSystemsDispatcher, game_systems};
 
 // ------------------------------------------ //
 // ------------ Test Constants -------------- //

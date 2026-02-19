@@ -14,18 +14,14 @@ pub mod game_systems {
     use dojo::model::ModelStorage;
     use dojo::world::IWorldDispatcherTrait;
     use starknet::{ContractAddress, get_caller_address};
-    use untitled::models::{
-        Vec2, GameSession, PlayerState, PlayerStats, TileOccupant, STARTING_HP, MAX_HP,
-        COMBAT_DAMAGE, COMBAT_XP_REWARD,
-    };
+    use untitled::constants::constants::DEFAULT_NS;
     use untitled::helpers::{combat, movement, spawn};
-    use untitled::utils::hex::{get_neighbor, is_within_bounds, get_neighbor_occupancy};
-    use untitled::constants::constants::{DEFAULT_NS};
-    use super::{
-        Direction,
-        GameState,
-        IGameSystems
+    use untitled::models::{
+        COMBAT_DAMAGE, COMBAT_XP_REWARD, GameSession, MAX_HP, PlayerState, PlayerStats, STARTING_HP,
+        TileOccupant, Vec2,
     };
+    use untitled::utils::hex::{get_neighbor, get_neighbor_occupancy, is_within_bounds};
+    use super::{Direction, GameState, IGameSystems};
 
     // ------------------------------------------ //
     // ------------ Events --------------------- //
@@ -183,7 +179,10 @@ pub mod game_systems {
                 // Reveal occupied neighbors from attacker's final position
                 let final_position = outcome.attacker_position;
                 let neighbors = get_neighbor_occupancy(ref world, final_position);
-                world.emit_event(@NeighborsRevealed { game_id, position: final_position, neighbors });
+                world
+                    .emit_event(
+                        @NeighborsRevealed { game_id, position: final_position, neighbors },
+                    );
             } else {
                 movement::execute_move(ref world, game_id, ref state, next_vec, direction);
 

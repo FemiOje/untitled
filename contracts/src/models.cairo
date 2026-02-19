@@ -68,12 +68,12 @@ pub struct GameState {
 #[derive(Serde, Copy, Drop, Introspect, PartialEq, Debug, DojoStore, Default)]
 pub enum Direction {
     #[default]
-    East,       // 0: E:  (+1,  0)
-    NorthEast,  // 1: NE: (+1, -1)
-    NorthWest,  // 2: NW: ( 0, -1)
-    West,       // 3: W:  (-1,  0)
-    SouthWest,  // 4: SW: (-1, +1)
-    SouthEast,  // 5: SE: ( 0, +1)
+    East, // 0: E:  (+1,  0)
+    NorthEast, // 1: NE: (+1, -1)
+    NorthWest, // 2: NW: ( 0, -1)
+    West, // 3: W:  (-1,  0)
+    SouthWest, // 4: SW: (-1, +1)
+    SouthEast // 5: SE: ( 0, +1)
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked, Debug, DojoStore)]
@@ -121,7 +121,7 @@ impl Vec2Impl of Vec2Trait {
 
 #[cfg(test)]
 mod tests {
-    use super::{Vec2, Vec2Trait, STARTING_HP, MAX_HP, COMBAT_DAMAGE};
+    use super::{COMBAT_DAMAGE, MAX_HP, STARTING_HP, Vec2, Vec2Trait};
 
     #[test]
     fn test_vec_is_zero() {
