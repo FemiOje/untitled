@@ -10,7 +10,7 @@ import { useSystemCalls } from "./useSystemCalls";
 import { useGameDirector } from "@/contexts/GameDirector";
 import { useGameStore } from "@/stores/gameStore";
 import { useUIStore } from "@/stores/uiStore";
-import { Direction } from "@/types/game";
+import { Direction, directionToString } from "@/types/game";
 import { useController } from "@/contexts/controller";
 import { debugLog } from "@/utils/helpers";
 import toast from "react-hot-toast";
@@ -159,6 +159,10 @@ export const useGameActions = () => {
         setIsMoving(true);
         setIsTransactionPending(true);
 
+        // Capture pre-move stats for delta calculation
+        const prevHp = useGameStore.getState().hp;
+        const prevXp = useGameStore.getState().xp;
+
         // Create move call with game_id
         const moveCall = move(gameId, direction);
 
@@ -175,7 +179,7 @@ export const useGameActions = () => {
           }
         );
 
-        // Detect move outcome from events for toast feedback
+        // Detect move outcome from events
         let moveOutcome = "unknown";
 
         events.forEach((event) => {
@@ -193,17 +197,86 @@ export const useGameActions = () => {
           }
         });
 
-        if (moveOutcome === "moved") {
-          toast.success("Moved!");
-        } else if (moveOutcome === "combat_won") {
-          toast.success("Won combat! Swapped positions.");
-        } else if (moveOutcome === "combat_lost") {
-          toast.error("Lost combat! Move failed.");
-        }
-
         // Refresh full state (HP/XP/can_move) from blockchain using pre_confirmed block tag.
         // This reads from the pending block that includes our pre-confirmed tx.
         await refreshGameState();
+
+        // Compute stat deltas after refresh
+        const newHp = useGameStore.getState().hp;
+        const newXp = useGameStore.getState().xp;
+        const playerDied = useGameStore.getState().isDead;
+        const hpDelta = newHp - prevHp; // negative = lost HP, positive = gained HP
+        const xpGained = newXp - prevXp;
+
+        // Override death reason with specific cause from move outcome
+        if (playerDied) {
+          const reason = moveOutcome === "combat_lost"
+            ? "Defeated in combat with another player"
+            : "Killed by a deadly encounter";
+          useGameStore.getState().setIsDead(true, newXp, reason);
+        }
+
+        // Determine toast title and border color
+        let title: string;
+        let borderColor: string;
+        if (playerDied) {
+          title = "You died!";
+          borderColor = "#f44336";
+        } else if (moveOutcome === "combat_won") {
+          title = "Won combat!";
+          borderColor = "#4caf50";
+        } else if (moveOutcome === "combat_lost") {
+          title = "Lost combat!";
+          borderColor = "#f44336";
+        } else {
+          title = `Moved ${directionToString(direction)}`;
+          borderColor = "#4285f4";
+        }
+
+        // Show rich toast with stat deltas
+        toast.custom(
+          (t) => (
+            <div
+              style={{
+                opacity: t.visible ? 1 : 0,
+                transition: "opacity 0.2s ease",
+                background: "rgba(10, 10, 30, 0.95)",
+                border: `1px solid ${borderColor}`,
+                borderRadius: 8,
+                padding: "12px 16px",
+                color: "#e0e0e0",
+                fontFamily: "monospace",
+                fontSize: 13,
+                maxWidth: 280,
+              }}
+            >
+              <div style={{ fontWeight: 600, marginBottom: 6, color: borderColor }}>
+                {title}
+              </div>
+              {xpGained !== 0 && (
+                <div style={{ color: "#4caf50" }}>
+                  +{xpGained} XP
+                </div>
+              )}
+              {hpDelta < 0 && (
+                <div style={{ color: "#f44336" }}>
+                  {hpDelta} HP
+                </div>
+              )}
+              {hpDelta > 0 && (
+                <div style={{ color: "#4caf50" }}>
+                  +{hpDelta} HP
+                </div>
+              )}
+              {xpGained === 0 && hpDelta === 0 && (
+                <div style={{ color: "#aaa", fontSize: 11 }}>
+                  No stat changes
+                </div>
+              )}
+            </div>
+          ),
+          { duration: 3000 }
+        );
       } catch (error) {
         console.error("Move error:", error);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";

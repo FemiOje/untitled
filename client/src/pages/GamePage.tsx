@@ -12,6 +12,7 @@ import { useGameDirector } from "../contexts/GameDirector";
 import { useController } from "../contexts/controller";
 import { useStarknetApi } from "../api/starknet";
 import { vec2ToHexPosition, calculateDirection } from "../utils/coordinateMapping";
+import toast from "react-hot-toast";
 
 export default function GamePage() {
     const navigate = useNavigate();
@@ -71,6 +72,42 @@ export default function GamePage() {
 
         return () => clearInterval(intervalId);
     }, [ownershipValid, isDead, isSpawned, refreshGameState]);
+
+    // Show death toast when killed while idle (detected by polling).
+    // Skip if isMoving — handleMove shows its own death toast.
+    const prevIsDeadRef = useRef(isDead);
+    useEffect(() => {
+        if (isDead && !prevIsDeadRef.current && !isMovingRef.current) {
+            const reason = useGameStore.getState().deathReason || "Slain by another player";
+            toast.custom(
+                (t) => (
+                    <div
+                        style={{
+                            opacity: t.visible ? 1 : 0,
+                            transition: "opacity 0.2s ease",
+                            background: "rgba(10, 10, 30, 0.95)",
+                            border: "1px solid #f44336",
+                            borderRadius: 8,
+                            padding: "12px 16px",
+                            color: "#e0e0e0",
+                            fontFamily: "monospace",
+                            fontSize: 13,
+                            maxWidth: 280,
+                        }}
+                    >
+                        <div style={{ fontWeight: 600, marginBottom: 6, color: "#f44336" }}>
+                            You were killed!
+                        </div>
+                        <div style={{ color: "#aaa", fontSize: 12 }}>
+                            {reason}
+                        </div>
+                    </div>
+                ),
+                { duration: 4000 }
+            );
+        }
+        prevIsDeadRef.current = isDead;
+    }, [isDead]);
 
     // URL validation and ownership check
     useEffect(() => {

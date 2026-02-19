@@ -1,12 +1,13 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
-import { useDeathXp, useGameStore } from "../stores/gameStore";
+import { useDeathXp, useDeathReason, useGameStore } from "../stores/gameStore";
 import { useGameActions } from "../dojo/useGameActions";
 
 export default function DeathPage() {
   const navigate = useNavigate();
   const deathXp = useDeathXp();
+  const deathReason = useDeathReason();
   const { handleSpawn, isSpawning } = useGameActions();
   const { setIsDead, resetGameState } = useGameStore();
 
@@ -40,6 +41,13 @@ export default function DeathPage() {
         <Typography sx={styles.prefixTitle}>You Died</Typography>
 
         <Typography sx={styles.title}>GAME OVER</Typography>
+
+        {deathReason && (
+          <Box sx={styles.encounterCard}>
+            <Typography sx={styles.encounterLabel}>Final Encounter</Typography>
+            <Typography sx={styles.encounterMessage}>{deathReason}</Typography>
+          </Box>
+        )}
 
         <Box sx={styles.statsCard}>
           <Typography sx={styles.statsLabel}>Final Score</Typography>
@@ -120,6 +128,30 @@ const styles = {
     textAlign: "center" as const,
     color: "#f44336",
     textShadow: "0 0 30px rgba(244, 67, 54, 0.5), 0 0 60px rgba(244, 67, 54, 0.2)",
+  },
+  encounterCard: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    gap: "8px",
+    padding: "16px 32px",
+    backgroundColor: "rgba(244, 67, 54, 0.08)",
+    borderRadius: "12px",
+    border: "1px solid rgba(244, 67, 54, 0.25)",
+    width: "100%",
+  },
+  encounterLabel: {
+    fontSize: "0.75rem",
+    color: "#f44336",
+    letterSpacing: 2,
+    textTransform: "uppercase" as const,
+    fontWeight: 600,
+  },
+  encounterMessage: {
+    fontSize: "1rem",
+    color: "#e0e0e0",
+    textAlign: "center" as const,
+    lineHeight: 1.5,
   },
   statsCard: {
     display: "flex",
