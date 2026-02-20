@@ -51,8 +51,8 @@ export const SoundProvider = ({ children }: PropsWithChildren) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentPhaseRef = useRef<GamePhase | null>(null);
   const gameplayIndexRef = useRef(0);
+  const wantsToPlayRef = useRef(false);
 
-  // Derive phase directly in render
   const phase: GamePhase =
     location.pathname === "/game" ? (isDead ? "death" : "gameplay") : "intro";
 
@@ -63,22 +63,43 @@ export const SoundProvider = ({ children }: PropsWithChildren) => {
     audio.volume = 0.3;
     audioRef.current = audio;
 
+    // When audio has buffered enough to play, start if we want to
+    const onCanPlay = () => {
+      if (wantsToPlayRef.current) {
+        audio.play().catch(() => {});
+      }
+    };
+    audio.addEventListener("canplay", onCanPlay);
+
     return () => {
+      audio.removeEventListener("canplay", onCanPlay);
       audio.pause();
       audio.src = "";
     };
   }, []);
 
-  // Handle first user interaction (browser autoplay policy)
+  // Detect user interaction — listen for all gesture types
   useEffect(() => {
     if (hasInteracted) return;
 
     const handler = () => setHasInteracted(true);
-    document.addEventListener("click", handler, { once: true });
-    return () => document.removeEventListener("click", handler);
+    const events = ["click", "touchstart", "keydown", "pointerdown"];
+    events.forEach((e) =>
+      document.addEventListener(e, handler, { once: true })
+    );
+    return () =>
+      events.forEach((e) => document.removeEventListener(e, handler));
   }, [hasInteracted]);
 
-  // Handle gameplay track rotation: when one track ends, play the next
+  // Attempt autoplay on mount (works if browser policy allows it)
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !musicEnabled || hasInteracted) return;
+
+    audio.play().then(() => setHasInteracted(true)).catch(() => {});
+  }, [musicEnabled, hasInteracted]);
+
+  // Handle gameplay track rotation
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -95,12 +116,11 @@ export const SoundProvider = ({ children }: PropsWithChildren) => {
     return () => audio.removeEventListener("ended", handleEnded);
   }, []);
 
-  // Main effect: handle track switching AND play/pause in one place
+  // Main effect: handle track switching and play/pause
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    // Switch track if phase changed
     if (phase !== currentPhaseRef.current) {
       currentPhaseRef.current = phase;
 
@@ -121,8 +141,11 @@ export const SoundProvider = ({ children }: PropsWithChildren) => {
       }
     }
 
-    // Play or pause based on current state
-    if (hasInteracted && musicEnabled) {
+    wantsToPlayRef.current = hasInteracted && musicEnabled;
+
+    if (!hasInteracted) return;
+
+    if (musicEnabled) {
       audio.play().catch(() => {});
     } else {
       audio.pause();
