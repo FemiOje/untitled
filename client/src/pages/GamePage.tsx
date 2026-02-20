@@ -109,6 +109,9 @@ export default function GamePage() {
             return;
         }
 
+        let timeoutId: NodeJS.Timeout | null = null;
+        let isMounted = true;
+
         const validateOwnership = async () => {
             // First check: valid game_id in URL
             if (!gameId || gameId <= 0) {
@@ -119,19 +122,38 @@ export default function GamePage() {
 
             // Wait for wallet connection
             if (!address) {
-                setIsValidatingOwnership(true);
+                if (isMounted) {
+                    setIsValidatingOwnership(true);
+                }
                 return;
             }
 
             try {
-                setIsValidatingOwnership(true);
+                if (isMounted) {
+                    setIsValidatingOwnership(true);
+                }
 
-                // Fetch game state to verify ownership
+                // Fetch game state with timeout to prevent infinite loading
+                timeoutId = setTimeout(() => {
+                    if (isMounted) {
+                        setIsValidatingOwnership(false);
+                        navigate("/");
+                    }
+                }, 10000); // 10 second timeout
+
                 const gameState = await getGameState(gameId);
+
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
 
                 if (!gameState) {
                     console.warn("Game not found:", gameId);
-                    navigate("/");
+                    if (isMounted) {
+                        setIsValidatingOwnership(false);
+                        navigate("/");
+                    }
                     return;
                 }
 
@@ -151,40 +173,55 @@ export default function GamePage() {
 
                 if (gamePlayer === connectedAddress) {
                     // Populate store with game state
-                    setGameId(gameId);
-                    setPosition({
-                        player: address,
-                        vec: gameState.position,
-                    });
-                    setMoves({
-                        player: address,
-                        last_direction: gameState.last_direction,
-                        can_move: gameState.can_move,
-                    });
-                    setStats(gameState.hp, gameState.max_hp, gameState.xp);
-                    setOccupiedNeighbors(gameState.neighbor_occupancy);
-                    setIsSpawned(gameState.is_active);
+                    if (isMounted) {
+                        setGameId(gameId);
+                        setPosition({
+                            player: address,
+                            vec: gameState.position,
+                        });
+                        setMoves({
+                            player: address,
+                            last_direction: gameState.last_direction,
+                            can_move: gameState.can_move,
+                        });
+                        setStats(gameState.hp, gameState.max_hp, gameState.xp);
+                        setOccupiedNeighbors(gameState.neighbor_occupancy);
+                        setIsSpawned(gameState.is_active);
 
-                    // Detect death
-                    if (!gameState.is_active && gameState.hp === 0) {
-                        setIsDead(true, gameState.xp);
+                        // Detect death
+                        if (!gameState.is_active && gameState.hp === 0) {
+                            setIsDead(true, gameState.xp);
+                        }
+
+                        setOwnershipValid(true);
+                        setIsValidatingOwnership(false);
                     }
-
-                    setOwnershipValid(true);
-                    setIsValidatingOwnership(false);
                 } else {
                     console.warn("❌ Ownership mismatch");
                     console.warn("Game belongs to:", gameState.player, "→", gamePlayer);
                     console.warn("Connected wallet:", address, "→", connectedAddress);
-                    navigate("/");
+                    if (isMounted) {
+                        setIsValidatingOwnership(false);
+                        navigate("/");
+                    }
                 }
             } catch (error) {
                 console.error("Error validating ownership:", error);
-                navigate("/");
+                if (isMounted) {
+                    setIsValidatingOwnership(false);
+                    navigate("/");
+                }
             }
         };
 
         validateOwnership();
+
+        return () => {
+            isMounted = false;
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameId, address, ownershipValid]);
 
