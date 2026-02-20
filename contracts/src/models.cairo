@@ -76,9 +76,9 @@ pub struct PlayerStats {
 #[dojo::model]
 pub struct HighestScore {
     #[key]
-    pub game_id: u32,  // Always 0 for singleton
+    pub game_id: u32, // Always 0 for singleton
     pub player: ContractAddress,
-    pub username: felt252,  // Cartridge username as felt252
+    pub username: felt252, // Cartridge username as felt252
     pub xp: u32,
 }
 

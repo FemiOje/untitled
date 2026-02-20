@@ -7,8 +7,7 @@ mod tests {
         MIN_MAX_HP, PlayerState, PlayerStats, STARTING_HP, TileOccupant, Vec2,
     };
     use hexed::systems::game::contracts::{ // IGameSystemsDispatcher,
-        IGameSystemsDispatcherTrait,
-    };
+    IGameSystemsDispatcherTrait};
     use hexed::utils::hex::is_within_bounds;
     use hexed::utils::setup::{ATTACKER_ADDR, DEFENDER_ADDR, PLAYER_ADDR, deploy_world};
     // use starknet::ContractAddress;

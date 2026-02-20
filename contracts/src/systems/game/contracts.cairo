@@ -15,15 +15,15 @@ pub mod game_systems {
     use dojo::event::EventStorage;
     use dojo::model::ModelStorage;
     use dojo::world::IWorldDispatcherTrait;
-    use starknet::{ContractAddress, get_caller_address};
     use hexed::constants::constants::DEFAULT_NS;
     use hexed::helpers::encounter::{EncounterOutcomeIntoU8, EncounterOutcomeTrait};
     use hexed::helpers::{combat, encounter, movement, spawn};
     use hexed::models::{
-        COMBAT_DAMAGE, COMBAT_XP_REWARD, GameSession, HighestScore, MAX_HP, PlayerState, PlayerStats,
-        STARTING_HP, TileOccupant, Vec2,
+        COMBAT_DAMAGE, COMBAT_XP_REWARD, GameSession, HighestScore, MAX_HP, PlayerState,
+        PlayerStats, STARTING_HP, TileOccupant, Vec2,
     };
     use hexed::utils::hex::{get_neighbor, get_neighbor_occupancy, is_within_bounds};
+    use starknet::{ContractAddress, get_caller_address};
     use super::{Direction, GameState, IGameSystems};
 
     // ------------------------------------------ //
@@ -260,7 +260,9 @@ pub mod game_systems {
             }
         }
 
-        fn register_score(ref self: ContractState, player: ContractAddress, username: felt252, xp: u32) {
+        fn register_score(
+            ref self: ContractState, player: ContractAddress, username: felt252, xp: u32,
+        ) {
             let mut world = self.world_default();
             let mut current: HighestScore = world.read_model(0_u32);
 
@@ -269,7 +271,7 @@ pub mod game_systems {
                 current.player = player;
                 current.username = username;
                 current.xp = xp;
-                current.game_id = 0_u32;  // Singleton key
+                current.game_id = 0_u32; // Singleton key
 
                 world.write_model(@current);
                 world.emit_event(@HighestScoreUpdated { player, username, xp });

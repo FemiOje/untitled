@@ -1,13 +1,12 @@
 use core::hash::HashStateTrait;
 use core::poseidon::PoseidonTrait;
 use dojo::model::ModelStorage;
-use starknet::get_block_timestamp;
 use hexed::helpers::combat::{add_xp, handle_player_death};
 use hexed::models::{
-    BLESSING_HP_AMOUNT, BLESSING_XP_AMOUNT, DRAIN_XP_AMOUNT,
-    EMPOWER_XP_AMOUNT, GIFT_THRESHOLD, HEAL_AMOUNT,
-    HEX_HP_AMOUNT, HEX_XP_AMOUNT, POISON_DAMAGE, PlayerStats, Vec2,
+    BLESSING_HP_AMOUNT, BLESSING_XP_AMOUNT, DRAIN_XP_AMOUNT, EMPOWER_XP_AMOUNT, GIFT_THRESHOLD,
+    HEAL_AMOUNT, HEX_HP_AMOUNT, HEX_XP_AMOUNT, POISON_DAMAGE, PlayerStats, Vec2,
 };
+use starknet::get_block_timestamp;
 
 // ------------------------------------------ //
 // ------------ Types ----------------------- //
@@ -194,9 +193,8 @@ pub fn resolve_encounter(
 #[cfg(test)]
 mod tests {
     use hexed::models::{
-        BLESSING_HP_AMOUNT, BLESSING_XP_AMOUNT, DRAIN_XP_AMOUNT,
-        EMPOWER_XP_AMOUNT, EXPLORE_XP_REWARD, HEAL_AMOUNT,
-        HEX_HP_AMOUNT, HEX_XP_AMOUNT, MAX_HP, POISON_DAMAGE,
+        BLESSING_HP_AMOUNT, BLESSING_XP_AMOUNT, DRAIN_XP_AMOUNT, EMPOWER_XP_AMOUNT,
+        EXPLORE_XP_REWARD, HEAL_AMOUNT, HEX_HP_AMOUNT, HEX_XP_AMOUNT, MAX_HP, POISON_DAMAGE,
         PlayerStats, STARTING_HP,
     };
     use super::{EncounterOutcome, EncounterOutcomeTrait, apply_encounter, determine_outcome};
