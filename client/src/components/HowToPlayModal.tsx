@@ -194,6 +194,7 @@ const styles = {
       "radial-gradient(ellipse at 50% 40%, rgba(20, 35, 20, 0.95) 0%, rgba(8, 15, 10, 0.98) 100%)",
     backdropFilter: "blur(8px)",
     zIndex: 0,
+    pointerEvents: "none" as const,
   },
   vignette: {
     position: "absolute" as const,
@@ -204,6 +205,7 @@ const styles = {
     background:
       "radial-gradient(circle at 50% 50%, transparent 20%, rgba(0, 0, 0, 0.6) 100%)",
     zIndex: 1,
+    pointerEvents: "none" as const,
   },
   modal: {
     position: "relative" as const,
@@ -247,7 +249,7 @@ const styles = {
     color: "rgba(255, 255, 255, 0.5)",
     transition: "color 0.2s",
     "&:hover": {
-      color: "#00d4ff",
+      color: "#44cc44",
     },
   },
   scrollContainer: {
@@ -261,11 +263,11 @@ const styles = {
       background: "rgba(0, 0, 0, 0.2)",
     },
     "&::-webkit-scrollbar-thumb": {
-      background: "rgba(0, 212, 255, 0.3)",
+      background: "rgba(68, 204, 68, 0.3)",
       borderRadius: 0,
     },
     "&::-webkit-scrollbar-thumb:hover": {
-      background: "rgba(0, 212, 255, 0.5)",
+      background: "rgba(68, 204, 68, 0.5)",
     },
   },
   section: {

@@ -16,9 +16,10 @@ export default function StartPage() {
         const hasSeenTutorial = localStorage.getItem("hexed_tutorial_seen");
         if (!hasSeenTutorial && address) {
             // Show tutorial after brief delay for better UX
-            setTimeout(() => {
+            const timerId = setTimeout(() => {
                 setShowHelpModal(true);
             }, 800);
+            return () => clearTimeout(timerId);
         }
     }, [address, setShowHelpModal]);
 

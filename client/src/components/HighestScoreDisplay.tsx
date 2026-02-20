@@ -49,7 +49,9 @@ export const HighestScoreDisplay = () => {
       <div style={{ color: "#44cc44", fontWeight: 600 }}>
         {highestScore.xp} XP
       </div>
-      <div style={{ marginTop: 8, fontSize: 10, color: "rgba(68, 204, 68, 0.5)" }}>
+      <div
+        style={{ marginTop: 8, fontSize: 10, color: "rgba(68, 204, 68, 0.7)" }}
+      >
         {shortAddress(highestScore.player)}
       </div>
     </div>
