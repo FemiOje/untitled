@@ -48,7 +48,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_systems_move = async (snAccount: Account | AccountInterface, gameId: BigNumberish, direction: CairoCustomEnum) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_systems_move_calldata(gameId, direction),
 				"hexed",
 			);
@@ -69,7 +69,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_systems_registerScore = async (snAccount: Account | AccountInterface, player: string, username: BigNumberish, xp: BigNumberish) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_systems_registerScore_calldata(player, username, xp),
 				"hexed",
 			);
@@ -90,7 +90,7 @@ export function setupWorld(provider: DojoProvider) {
 	const game_systems_spawn = async (snAccount: Account | AccountInterface) => {
 		try {
 			return await provider.execute(
-				snAccount,
+				snAccount as any,
 				build_game_systems_spawn_calldata(),
 				"hexed",
 			);
