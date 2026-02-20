@@ -276,7 +276,7 @@ export default function GamePage() {
     }
 
     return (
-        <div style={{ width: "100%", height: "100vh", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ width: "100%", height: "100dvh", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <Header />
             <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
                 {/* Position Display */}

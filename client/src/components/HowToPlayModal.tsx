@@ -1,4 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
+import { MouseEvent } from "react";
 import {
   Target,
   Hexagon,
@@ -89,7 +90,7 @@ export default function HowToPlayModal() {
     setShowHelpModal(false);
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  const handleBackdropClick = (e: MouseEvent) => {
     if (e.target === e.currentTarget) {
       handleClose();
     }
