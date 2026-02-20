@@ -16,10 +16,10 @@ export const HighestScoreDisplay = () => {
       <div
         style={{
           padding: "16px",
-          border: "1px solid #666",
+          border: "1px solid rgba(68, 204, 68, 0.3)",
           borderRadius: 4,
           textAlign: "center",
-          color: "#999",
+          color: "rgba(68, 204, 68, 0.6)",
           fontFamily: "monospace",
           fontSize: 12,
         }}
@@ -33,23 +33,23 @@ export const HighestScoreDisplay = () => {
     <div
       style={{
         padding: "16px",
-        border: "2px solid #ffd700",
+        border: "2px solid #44cc44",
         borderRadius: 4,
-        background: "rgba(255, 215, 0, 0.05)",
+        background: "rgba(68, 204, 68, 0.05)",
         fontFamily: "monospace",
         fontSize: 12,
       }}
     >
-      <div style={{ marginBottom: 8, color: "#ffd700", fontWeight: 600 }}>
+      <div style={{ marginBottom: 8, color: "#44cc44", fontWeight: 600 }}>
         HIGHEST SCORE
       </div>
       <div style={{ marginBottom: 6, color: "#e0e0e0" }}>
         <strong>{highestScore.username}</strong>
       </div>
-      <div style={{ color: "#4caf50", fontWeight: 600 }}>
+      <div style={{ color: "#44cc44", fontWeight: 600 }}>
         {highestScore.xp} XP
       </div>
-      <div style={{ marginTop: 8, fontSize: 10, color: "#666" }}>
+      <div style={{ marginTop: 8, fontSize: 10, color: "rgba(68, 204, 68, 0.5)" }}>
         {shortAddress(highestScore.player)}
       </div>
     </div>
