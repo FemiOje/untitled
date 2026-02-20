@@ -6,7 +6,7 @@ function Header() {
     <Box sx={styles.header}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-          Untitled
+          Hexed
         </Typography>
       </Box>
 

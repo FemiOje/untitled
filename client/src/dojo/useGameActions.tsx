@@ -115,7 +115,7 @@ export const useGameActions = () => {
 
             // Save to localStorage for persistence
             if (address) {
-              const storageKey = `untitled_game_id_${address}`;
+              const storageKey = `hexed_game_id_${address}`;
               localStorage.setItem(storageKey, event.gameId.toString());
               debugLog("Saved game_id to localStorage", { key: storageKey, gameId: event.gameId });
             }
