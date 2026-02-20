@@ -10,7 +10,6 @@ import { useDojoSDK } from "@dojoengine/sdk/react";
 import { useGameStore } from "@/stores/gameStore";
 import { useController } from "@/contexts/controller";
 import { Position, Moves, Direction } from "@/types/game";
-import { debugLog } from "@/utils/helpers";
 import { isValidPositionObject } from "@/utils/position";
 
 /**
@@ -79,7 +78,6 @@ export const usePlayerPositionSync = () => {
               isValidPositionObject(position) &&
               Date.now() - lastSyncRef.current > 100
             ) {
-              debugLog("Position synced from blockchain", position);
               setPosition(position);
               setIsSpawned(true);
               lastSyncRef.current = Date.now();
@@ -137,8 +135,6 @@ export const usePlayerMovesSync = () => {
           );
 
           if (movesModel) {
-            console.log("🔍 Raw movesModel from blockchain:", movesModel);
-
             const moves: Moves = {
               player: address,
               last_direction:
@@ -153,8 +149,6 @@ export const usePlayerMovesSync = () => {
             if (
               Date.now() - lastSyncRef.current > 100
             ) {
-              console.log("✅ Moves synced from blockchain:", moves);
-              debugLog("Moves synced from blockchain", moves);
               setMoves(moves);
               lastSyncRef.current = Date.now();
             }
@@ -193,23 +187,12 @@ export const useRefreshPlayerState = () => {
   const { setPosition, setMoves, setIsSpawned, setIsSyncing } = useGameStore();
 
   const refreshState = useCallback(async () => {
-    if (!address || !entities) {
-      console.warn("Cannot refresh: no address or entities");
-      return;
-    }
+    if (!address || !entities) return;
 
     try {
       setIsSyncing(true);
-      debugLog("Force refreshing player state");
 
       const entityArray = Object.values(entities);
-      // console.log("🔍 Total entities in store:", entityArray.length);
-
-      // Log first few entities to see structure
-      // if (entityArray.length > 0) {
-      //   console.log("📦 Sample entity:", entityArray[0]);
-      //   console.log("📦 All entity keys:", Object.keys(entities));
-      // }
 
       // Find and process all relevant entities
       let positionFound = false;
@@ -219,25 +202,9 @@ export const useRefreshPlayerState = () => {
         const models = (entity as any)?.models || {};
 
         // Log all models in this entity
-        const modelKeys = Object.keys(models);
-        if (modelKeys.length > 0) {
-          console.log("📋 Entity models:", modelKeys);
-        }
-
         // Check for position model
         for (const model of Object.values(models)) {
           const m = model as any;
-
-          // Log each model to see what we're comparing
-          if (m?.player) {
-            console.log("🔍 Found model with player:", {
-              modelPlayer: m.player,
-              targetPlayer: address,
-              match: m.player.toLowerCase() === address.toLowerCase(),
-              hasVec: m?.vec !== undefined,
-              hasCanMove: m?.can_move !== undefined,
-            });
-          }
 
           if (
             m?.player?.toLowerCase() === address.toLowerCase() &&
@@ -250,7 +217,6 @@ export const useRefreshPlayerState = () => {
                 y: m.vec.y || 0,
               },
             };
-            console.log("✅ Position found:", position);
             setPosition(position);
             setIsSpawned(true);
             positionFound = true;
@@ -268,19 +234,13 @@ export const useRefreshPlayerState = () => {
                   : null,
               can_move: m.can_move === true,
             };
-            console.log("✅ Moves found:", moves);
             setMoves(moves);
             movesFound = true;
           }
         }
       }
 
-      if (positionFound || movesFound) {
-        debugLog("Player state refreshed successfully", {
-          positionFound,
-          movesFound,
-        });
-      } else {
+      if (!positionFound && !movesFound) {
         // console.error("❌ No player state found in entities");
         // debugLog("No player state found in entities");
       }

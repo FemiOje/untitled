@@ -1,7 +1,7 @@
 import { useDynamicConnector } from "@/starknet-provider";
 import { useController } from "@/contexts/controller";
 import { getContractByName } from "@/utils/networkConfig";
-import { delay, debugLog, parseTransactionError } from "@/utils/helpers";
+import { delay } from "@/utils/helpers";
 import { extractGameEvents } from "@/utils/events";
 import { GameEvent, Moves } from "@/types/game";
 import { useCallback, useRef } from "react";
@@ -40,7 +40,7 @@ export const useSystemCalls = () => {
   )?.address;
 
   if (!GAME_SYSTEMS_ADDRESS) {
-    console.warn("Game systems contract address not found in manifest");
+    // Game systems contract not found in manifest
   }
 
   /**
@@ -131,9 +131,8 @@ export const useSystemCalls = () => {
 
         // Check if player can move
         if (!latestMoves.can_move) {
-          debugLog("Waiting for can_move to be true");
+
           if (retries > 9) {
-            console.warn("Max retries reached, proceeding anyway");
             return true;
           }
           await delay(500);
@@ -174,14 +173,11 @@ export const useSystemCalls = () => {
       }
 
       try {
-        debugLog(`Waiting for pre-confirmed transaction (attempt ${retries + 1})`, txHash);
-
         const receipt: any = await account!.waitForTransaction(txHash, {
           retryInterval: 275,
           successStates: ["PRE_CONFIRMED", "ACCEPTED_ON_L2", "ACCEPTED_ON_L1"],
         });
 
-        debugLog("Transaction pre-confirmed", receipt);
         return receipt;
       } catch (error) {
         console.error("Error waiting for pre-confirmed transaction:", error);
@@ -207,13 +203,10 @@ export const useSystemCalls = () => {
       }
 
       try {
-        debugLog(`Waiting for transaction (attempt ${retries + 1})`, txHash);
-
         const receipt: any = await account!.waitForTransaction(txHash, {
           retryInterval: 350,
         });
 
-        debugLog("Transaction confirmed", receipt);
         return receipt;
       } catch (error) {
         console.error("Error waiting for transaction:", error);
@@ -256,18 +249,11 @@ export const useSystemCalls = () => {
           throw new Error("No calls provided");
         }
 
-        // Log the action being executed
-        debugLog("Executing action", {
-          callCount: calls.length,
-          calls: calls.map((c) => c.entrypoint),
-        });
-
         // Wait for global state sync before executing
         await waitForGlobalState(calls, 0);
 
         // Execute transaction
         const tx = await account.execute(calls);
-        debugLog("Transaction submitted", tx.transaction_hash);
 
         // Wait for pre-confirmed receipt (fast UX)
         const receipt: any = await waitForPreConfirmedTransaction(
@@ -277,7 +263,6 @@ export const useSystemCalls = () => {
 
         // Check for revert
         if (receipt.execution_status === "REVERTED") {
-          debugLog("Transaction reverted", receipt);
           forceResetAction();
 
           throw new Error("Transaction reverted");
@@ -285,17 +270,12 @@ export const useSystemCalls = () => {
 
         // Extract game events from receipt
         const gameEvents = extractGameEvents(receipt, manifest);
-        debugLog(`Extracted ${gameEvents.length} game events`, gameEvents);
 
         // Call success callback
         successCallback();
 
         return gameEvents;
       } catch (error) {
-        console.error("Error executing action:", error);
-        const errorMessage = parseTransactionError(error);
-        console.error("Parsed error:", errorMessage);
-
         // Reset state on failure
         forceResetAction();
 

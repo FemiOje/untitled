@@ -20,7 +20,6 @@ import { useUIStore } from "@/stores/uiStore";
 import { useStarknetApi } from "@/api/starknet";
 import { useSystemCalls } from "@/dojo/useSystemCalls";
 import { GameEvent } from "@/types/game";
-import { debugLog } from "@/utils/helpers";
 
 export interface GameDirectorContext {
   isInitialized: boolean;
@@ -84,49 +83,23 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
       if (!address) return;
 
       try {
-        debugLog("Registering death score on leaderboard", {
-          address,
-          playerName,
-          finalXp,
-        });
-
-        console.log("[LEADERBOARD] Registering score:", {
-          player: address,
-          username: playerName || address,
-          xp: finalXp,
-          timestamp: new Date().toISOString(),
-        });
-
         const scoreCall = registerScore(
           address,
           playerName || address,
           finalXp
         );
 
-        console.log("[LEADERBOARD] Score call created:", scoreCall);
-
         // Execute register_score without waiting for confirmation
         await executeAction(
           [scoreCall],
-          () => {
-            console.error("[LEADERBOARD] Death score registration failed");
-            debugLog("Death score registration failed");
-          },
-          () => {
-            console.log("[LEADERBOARD] Death score registration submitted");
-            debugLog("Death score registration submitted");
-          }
+          () => {},
+          () => {}
         );
 
         // Fetch and update highest score
-        console.log("[LEADERBOARD] Fetching highest score...");
         const highestScore = await getHighestScore();
         if (highestScore) {
-          console.log("[LEADERBOARD] Updated highest score:", highestScore);
-          debugLog("Updated highest score after death", highestScore);
           setHighestScore(highestScore);
-        } else {
-          console.log("[LEADERBOARD] No highest score returned from RPC");
         }
       } catch (error) {
         console.error("Error registering death score:", error);
@@ -156,10 +129,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
    * Uses single get_game_state call following death-mountain pattern
    */
   const initializeGame = useCallback(async () => {
-    if (!address) {
-      console.warn("Cannot initialize game: no address");
-      return;
-    }
+    if (!address) return;
 
     try {
       setIsInitializing(true);
@@ -215,16 +185,12 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
               setIsInitialized(true);
               // debugLog("Game initialization complete");
             } else {
-              console.warn("Game ownership mismatch, clearing localStorage");
-              console.warn("Game player:", gameState.player, "→", gamePlayer);
-              console.warn("Connected:", address, "→", connectedAddr);
               localStorage.removeItem(storageKey);
               setGameId(null);
               setIsSpawned(false);
               setIsInitialized(true);
             }
           } else {
-            debugLog("Game state not found, player may need to spawn");
             setIsSpawned(false);
             setIsInitialized(true);
           }
@@ -235,7 +201,6 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
         }
       } else {
         // No saved game - player needs to spawn
-        debugLog("No active game found, player needs to spawn");
         setIsSpawned(false);
         setIsInitialized(true);
       }
@@ -275,33 +240,24 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
    */
   const processEvent = useCallback(
     (event: GameEvent) => {
-      debugLog("Processing game event", event);
-
-      // Add event to log
       addEvent(event);
 
-      // Update state based on event type
       switch (event.type) {
         case "spawned":
           if (event.position) {
             setPosition(event.position);
             setIsSpawned(true);
-
-            // Initialize Moves state - contract creates Moves with can_move: true during spawn
             setMoves({
               player: event.position.player,
               last_direction: null,
               can_move: true,
             });
-
-            debugLog("Player spawned at", event.position.vec);
           }
           break;
 
         case "moved":
           if (event.position) {
             setPosition(event.position);
-            debugLog("Player moved to", event.position.vec);
           }
           if (event.moves) {
             setMoves(event.moves);
@@ -311,29 +267,20 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
         case "combat_result":
           if (event.position) {
             setPosition(event.position);
-            debugLog(
-              event.combatWon ? "Won combat, moved to" : "Lost combat, stayed at",
-              event.position.vec
-            );
           }
           break;
 
         case "position_update":
           if (event.position) {
             setPosition(event.position);
-            debugLog("Position updated", event.position.vec);
           }
           break;
 
         case "neighbors_revealed":
           if (event.neighborsOccupied !== undefined) {
             setOccupiedNeighbors(event.neighborsOccupied);
-            debugLog("Neighbors revealed, mask:", event.neighborsOccupied);
           }
           break;
-
-        default:
-          debugLog("Unhandled event type", event.type);
       }
     },
     [addEvent, setPosition, setMoves, setIsSpawned, setOccupiedNeighbors]
@@ -344,15 +291,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
    * Uses single get_game_state call following death-mountain pattern
    */
   const refreshGameState = useCallback(async () => {
-    if (!address) {
-      console.warn("Cannot refresh: no address");
-      return;
-    }
-
-    if (!gameId) {
-      console.warn("Cannot refresh: no gameId");
-      return;
-    }
+    if (!address || !gameId) return;
 
     try {
       // debugLog("Manually refreshing game state");
@@ -382,16 +321,8 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
 
           // Detect death
           if (!gameState.is_active && gameState.hp === 0) {
-            debugLog("Player death detected from blockchain", {
-              hp: gameState.hp,
-              xp: gameState.xp,
-              isActive: gameState.is_active,
-            });
             setIsDead(true, gameState.xp, "Slain by another player");
-            // Register death score on leaderboard
-            debugLog("About to register death score with XP:", gameState.xp);
             await registerDeathScore(gameState.xp);
-            debugLog("Death score registration completed");
           }
         } else {
           // console.warn("Game ownership mismatch during refresh");
@@ -400,7 +331,6 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
           setError("Game ownership validation failed");
         }
       } else {
-        console.warn("Game state not found during refresh");
         setError("Failed to load game state");
       }
     } catch (error) {

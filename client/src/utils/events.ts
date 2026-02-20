@@ -6,7 +6,7 @@
  */
 
 import { GameEvent, Direction, EncounterOutcome } from "@/types/game";
-import { debugLog, feltHexToI32 } from "./helpers";
+import { feltHexToI32 } from "./helpers";
 
 /**
  * Parse Vec2 from event data
@@ -54,7 +54,6 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
     );
 
     if (!eventDef) {
-      debugLog("Event selector not found in manifest:", eventSelector);
       return { type: "unknown" };
     }
 
@@ -67,18 +66,7 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
     // data[1..numKeys] = key values
     const gameId = parseInt(data[1] || "0", 16); // First key is game_id
     // data[numKeys + 1] = number of values
-    const numValues = parseInt(data[numKeys + 1] || "0", 16);
-    // data[numKeys + 2..] = value fields
     const valueOffset = numKeys + 2;
-
-    debugLog("Parsing event:", {
-      eventName,
-      selector: eventSelector,
-      numKeys,
-      numValues,
-      gameId,
-      data,
-    });
 
     // Parse Spawned event
     // Key: game_id
@@ -86,8 +74,6 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
     if (eventName === "spawned") {
       const player = data[valueOffset]; // player is first value
       const vec = parseVec2(data, valueOffset + 1); // position follows player
-
-      debugLog("Parsed Spawned event:", { gameId, player, vec });
 
       return {
         type: "spawned",
@@ -107,14 +93,12 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
       const direction = parseInt(data[valueOffset] || "0", 16) as Direction;
       const vec = parseVec2(data, valueOffset + 1);
 
-      debugLog("Parsed Moved event:", { gameId, direction, vec });
-
       return {
         type: "moved",
         gameId,
         direction,
         position: {
-          player: "", // Player not in Moved event anymore
+          player: "",
           vec,
         },
       };
@@ -126,8 +110,6 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
     if (eventName === "neighborsrevealed") {
       const vec = parseVec2(data, valueOffset);
       const neighbors = parseInt(data[valueOffset + 2] || "0", 16);
-
-      debugLog("Parsed NeighborsRevealed event:", { gameId, vec, neighbors });
 
       return {
         type: "neighbors_revealed",
@@ -151,16 +133,6 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
       const xpAfter = parseInt(data[valueOffset + 4] || "0", 16);
       const playerDied = parseInt(data[valueOffset + 5] || "0", 16) !== 0;
 
-      debugLog("Parsed EncounterOccurred event:", {
-        gameId,
-        isGift,
-        outcome,
-        hpAfter,
-        maxHpAfter,
-        xpAfter,
-        playerDied,
-      });
-
       return {
         type: "encounter_occurred",
         gameId,
@@ -181,14 +153,6 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
       const attackerWon = parseInt(data[valueOffset + 1] || "0", 16) !== 0;
       const attackerPos = parseVec2(data, valueOffset + 2);
       const defenderPos = parseVec2(data, valueOffset + 4);
-
-      debugLog("Parsed CombatResult event:", {
-        gameId,
-        defenderGameId,
-        attackerWon,
-        attackerPos,
-        defenderPos,
-      });
 
       return {
         type: "combat_result",
@@ -213,10 +177,6 @@ export function processGameEvent(event: any, manifest: any): GameEvent {
 /**
  * Translate game event from transaction receipt
  * Maps raw transaction events to typed GameEvent objects
- *
- * @param event - Raw event from transaction receipt
- * @param manifest - Contract manifest for event lookup
- * @returns Typed GameEvent or null
  */
 export function translateGameEvent(
   event: any,
@@ -227,11 +187,9 @@ export function translateGameEvent(
       return null;
     }
 
-    // Process the event with manifest for proper parsing
     const processedEvent = processGameEvent(event, manifest);
 
     if (processedEvent.type !== "unknown") {
-      debugLog("Translated event:", processedEvent);
       return processedEvent;
     }
 
@@ -244,11 +202,6 @@ export function translateGameEvent(
 
 /**
  * Extract valid game events from transaction receipt
- * Filters and processes events from transaction execution
- *
- * @param receipt - Transaction receipt
- * @param manifest - Contract manifest
- * @returns Array of valid GameEvent objects
  */
 export function extractGameEvents(
   receipt: any,
@@ -259,13 +212,9 @@ export function extractGameEvents(
       return [];
     }
 
-    const translatedEvents = receipt.events
+    return receipt.events
       .map((event: any) => translateGameEvent(event, manifest))
       .filter((event: GameEvent | null): event is GameEvent => event !== null);
-
-    debugLog(`Extracted ${translatedEvents.length} game events from receipt`);
-
-    return translatedEvents;
   } catch (error) {
     console.error("Error extracting game events:", error);
     return [];
@@ -274,8 +223,6 @@ export function extractGameEvents(
 
 /**
  * Get event icon/image based on event type
- * @param event - GameEvent object
- * @returns Icon/image path
  */
 export function getEventIcon(event: GameEvent): string {
   switch (event.type) {
@@ -294,8 +241,6 @@ export function getEventIcon(event: GameEvent): string {
 
 /**
  * Get human-readable event title
- * @param event - GameEvent object
- * @returns Event title string
  */
 export function getEventTitle(event: GameEvent): string {
   switch (event.type) {
@@ -316,8 +261,6 @@ export function getEventTitle(event: GameEvent): string {
 
 /**
  * Get direction name from Direction enum
- * @param direction - Direction enum value
- * @returns Direction name string
  */
 function getDirectionName(direction: Direction): string {
   const names: Record<Direction, string> = {
@@ -333,19 +276,13 @@ function getDirectionName(direction: Direction): string {
 
 /**
  * Check if event is a fatal error
- * @param _event - GameEvent object
- * @returns True if fatal error
  */
 export function isFatalError(_event: GameEvent): boolean {
-  // In the future, check for specific error event types
   return false;
 }
 
 /**
  * Batch process multiple events
- * @param events - Array of raw events
- * @param manifest - Contract manifest
- * @returns Array of processed GameEvent objects
  */
 export function batchProcessEvents(
   events: any[],
