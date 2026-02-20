@@ -205,7 +205,7 @@ export const useUIStore = create<UIState>()(
       clearNotifications: () => set({ notifications: [] }),
     }),
     {
-      name: "untitled-ui-storage", // Storage key
+      name: "hexed-ui-storage", // Storage key
       partialize: (state) => ({
         // Only persist user preferences
         soundEnabled: state.soundEnabled,

@@ -107,7 +107,7 @@ export const GameDirectorProvider = ({ children }: PropsWithChildren) => {
       initializePlayerState(address);
 
       // Load game_id from localStorage if available
-      const storageKey = `untitled_game_id_${address}`;
+      const storageKey = `hexed_game_id_${address}`;
       const savedGameId = localStorage.getItem(storageKey);
 
       if (savedGameId) {

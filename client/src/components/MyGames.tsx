@@ -12,7 +12,7 @@ import { useController } from "../contexts/controller";
 import { useGameActions } from "../dojo/useGameActions";
 import { useIsSpawned, useCurrentPosition, useGameId, useGameStore } from "../stores/gameStore";
 
-const STORAGE_KEY_PREFIX = "untitled_game_id_";
+const STORAGE_KEY_PREFIX = "hexed_game_id_";
 
 export default function MyGames() {
   const navigate = useNavigate();

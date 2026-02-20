@@ -23,7 +23,7 @@ export default function StartPage() {
             {/* Content */}
             <Box sx={styles.content}>
                 <Box sx={styles.titleContainer}>
-                    <Typography sx={styles.title}>UNTITLED</Typography>
+                    <Typography sx={styles.title}>HEXED</Typography>
                     <Box sx={styles.titleGlow} />
                 </Box>
 
