@@ -153,14 +153,15 @@ export default function HexGrid({
           baseColor = BIOME_COLORS[bi];
         }
 
-        // Apply opacity by creating a new color with alpha
-        // Note: THREE.Color doesn't have alpha, so we'll handle this differently
-        // We'll darken the color based on opacity to simulate fade to background
+        // Apply opacity by fading to darker, muted version of biome color
         const fadedColor = baseColor.clone();
         if (opacity < 1.0) {
-          // Blend with scene background color (#3b2d5e) based on opacity
-          const bgColor = new THREE.Color(0x3b2d5e);
-          fadedColor.lerp(bgColor, 1.0 - opacity);
+          // Create darker, desaturated version of the base color
+          const mutedColor = baseColor.clone();
+          mutedColor.multiplyScalar(0.4); // Darken to 40%
+          mutedColor.lerp(new THREE.Color(0x606060), 0.3); // Desaturate with gray
+
+          fadedColor.lerp(mutedColor, 1.0 - opacity);
         }
 
         mesh.setColorAt(i, fadedColor);
@@ -196,8 +197,8 @@ export default function HexGrid({
     if (container.clientWidth === 0 || container.clientHeight === 0) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x3b2d5e);
-    scene.fog = new THREE.Fog(0x3b2d5e, 200, 500);
+    scene.background = new THREE.Color(0x87ceeb); // Sky blue
+    scene.fog = new THREE.Fog(0x87ceeb, 200, 500);
 
     // Initialize camera at player position
     const playerWorldPos = getWorldPositionForHex(playerPosition);
@@ -342,49 +343,6 @@ export default function HexGrid({
     scene.add(borderMesh);
     scene.add(instancedMesh);
 
-    // Create radial gradient ground plane for smooth edge blending
-    const groundGeometry = new THREE.PlaneGeometry(400, 400);
-
-    // Use ShaderMaterial for radial gradient effect
-    const groundMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        centerColor: { value: new THREE.Color(0x1b1e2b) }, // Inner color
-        edgeColor: { value: new THREE.Color(0x0a0a15) },   // Outer color (darker)
-        radius: { value: 200.0 },                           // Gradient radius
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 centerColor;
-        uniform vec3 edgeColor;
-        uniform float radius;
-        varying vec2 vUv;
-
-        void main() {
-          // Calculate distance from center (0.5, 0.5)
-          vec2 center = vec2(0.5, 0.5);
-          float dist = distance(vUv, center) * 2.0; // Normalize to 0-1
-
-          // Smooth gradient with easing
-          float t = smoothstep(0.0, 1.0, dist);
-          vec3 color = mix(centerColor, edgeColor, t);
-
-          gl_FragColor = vec4(color, 1.0);
-        }
-      `,
-    });
-
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.1;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
     // Smooth camera tracking
     const CAMERA_LERP_SPEED = 0.08; // Smooth but responsive
     const targetCameraPos = new THREE.Vector3();
@@ -463,10 +421,6 @@ export default function HexGrid({
       material.dispose();
       borderGeometry.dispose();
       borderMaterial.dispose();
-      groundGeometry.dispose();
-      if (groundMaterial instanceof THREE.ShaderMaterial) {
-        groundMaterial.dispose();
-      }
       controls.dispose();
     };
   }, [width, height]);
