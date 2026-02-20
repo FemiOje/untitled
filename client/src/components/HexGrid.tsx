@@ -571,98 +571,14 @@ export default function HexGrid({
           </div>
         </div>
       )}
-      {!disabled && tooltip && isMobileDevice && (
+      {!disabled && tooltip && (
         <div
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 100,
-            pointerEvents: "auto",
-          }}
-        >
-          <div
-            style={{
-              background: "rgba(10, 10, 30, 0.95)",
-              border: "2px solid rgba(68, 204, 68, 0.6)",
-              borderRadius: 12,
-              padding: "32px 28px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 24,
-              fontFamily: "monospace",
-              color: "#e0e0e0",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
-            }}
-          >
-            <div style={{ fontSize: 28, color: "#44cc44", fontWeight: 600, textAlign: "center" }}>
-              {(() => {
-                const dir = calculateDirection(playerPosition, tooltip.hex);
-                const isOccupied = dir !== null && occupiedNeighborsMask > 0 && ((occupiedNeighborsMask >> dir) & 1) === 1;
-                return isOccupied
-                  ? `⚔ Occupied`
-                  : `Move?`;
-              })()}
-            </div>
-            <div style={{ fontSize: 20, textAlign: "center" }}>
-              ({tooltip.hex.col}, {tooltip.hex.row})
-            </div>
-            <div style={{ display: "flex", gap: 16, flexDirection: "column", width: "100%" }}>
-              <button
-                onClick={handleConfirm}
-                style={{
-                  background: "#44cc44",
-                  color: "#0a0a1e",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "20px 40px",
-                  fontFamily: "monospace",
-                  fontSize: 20,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  width: "100%",
-                }}
-              >
-                {(() => {
-                  const dir = calculateDirection(playerPosition, tooltip.hex);
-                  const isOccupied = dir !== null && occupiedNeighborsMask > 0 && ((occupiedNeighborsMask >> dir) & 1) === 1;
-                  return isOccupied ? "⚔ ATTACK" : "✓ CONFIRM";
-                })()}
-              </button>
-              <button
-                onClick={handleCancel}
-                style={{
-                  background: "transparent",
-                  color: "#aaa",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  borderRadius: 6,
-                  padding: "20px 40px",
-                  fontFamily: "monospace",
-                  fontSize: 20,
-                  cursor: "pointer",
-                  width: "100%",
-                }}
-              >
-                ✕ CANCEL
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {!disabled && tooltip && !isMobileDevice && (
-        <div
-          style={{
-            position: "absolute",
-            left: tooltip.screenX,
-            top: tooltip.screenY,
-            transform: "translate(-50%, -120%)",
+            position: isMobileDevice ? "fixed" : "absolute",
+            ...(isMobileDevice
+              ? { top: 20, right: 20 }
+              : { left: tooltip.screenX, top: tooltip.screenY, transform: "translate(-50%, -120%)" }
+            ),
             pointerEvents: "auto",
             zIndex: 100,
           }}
@@ -672,13 +588,13 @@ export default function HexGrid({
               background: "rgba(10, 10, 30, 0.92)",
               border: "1px solid rgba(255,255,255,0.15)",
               borderRadius: 8,
-              padding: "8px 10px",
+              padding: isMobileDevice ? "16px 20px" : "8px 10px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 6,
+              gap: isMobileDevice ? 12 : 6,
               fontFamily: "monospace",
-              fontSize: 12,
+              fontSize: isMobileDevice ? 16 : 12,
               color: "#e0e0e0",
               boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
               whiteSpace: "nowrap",
@@ -693,7 +609,7 @@ export default function HexGrid({
                   : `Move to (${tooltip.hex.col}, ${tooltip.hex.row})?`;
               })()}
             </span>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: isMobileDevice ? 10 : 6, flexDirection: isMobileDevice ? "column" : "row" }}>
               <button
                 onClick={handleConfirm}
                 style={{
@@ -701,11 +617,12 @@ export default function HexGrid({
                   color: "#0a0a1e",
                   border: "none",
                   borderRadius: 4,
-                  padding: "4px 12px",
+                  padding: isMobileDevice ? "14px 24px" : "4px 12px",
                   fontFamily: "monospace",
-                  fontSize: 12,
+                  fontSize: isMobileDevice ? 16 : 12,
                   fontWeight: 700,
                   cursor: "pointer",
+                  minWidth: isMobileDevice ? 140 : "auto",
                 }}
               >
                 {(() => {
@@ -721,27 +638,30 @@ export default function HexGrid({
                   color: "#aaa",
                   border: "1px solid rgba(255,255,255,0.2)",
                   borderRadius: 4,
-                  padding: "4px 12px",
+                  padding: isMobileDevice ? "14px 24px" : "4px 12px",
                   fontFamily: "monospace",
-                  fontSize: 12,
+                  fontSize: isMobileDevice ? 16 : 12,
                   cursor: "pointer",
+                  minWidth: isMobileDevice ? 140 : "auto",
                 }}
               >
                 Cancel
               </button>
             </div>
           </div>
-          {/* Arrow pointing down */}
-          <div
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: "6px solid transparent",
-              borderRight: "6px solid transparent",
-              borderTop: "6px solid rgba(10, 10, 30, 0.92)",
-              margin: "0 auto",
-            }}
-          />
+          {/* Arrow pointing down - only on desktop */}
+          {!isMobileDevice && (
+            <div
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "6px solid transparent",
+                borderRight: "6px solid transparent",
+                borderTop: "6px solid rgba(10, 10, 30, 0.92)",
+                margin: "0 auto",
+              }}
+            />
+          )}
         </div>
       )}
     </div>
