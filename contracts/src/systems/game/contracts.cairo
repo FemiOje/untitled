@@ -219,15 +219,11 @@ pub mod game_systems {
                     );
 
                 if enc.player_died {
-                    world
-                        .emit_event(
-                            @PlayerDied { game_id, killed_by: 0, position: next_vec },
-                        );
+                    world.emit_event(@PlayerDied { game_id, killed_by: 0, position: next_vec });
                 } else {
                     // Only reveal neighbors if player is alive
                     let neighbors = get_neighbor_occupancy(ref world, next_vec);
-                    world
-                        .emit_event(@NeighborsRevealed { game_id, position: next_vec, neighbors });
+                    world.emit_event(@NeighborsRevealed { game_id, position: next_vec, neighbors });
                 }
             }
         }

@@ -1291,10 +1291,7 @@ mod tests {
         let mut found_death = false;
         let mut gid: u32 = 50;
         while gid < 80 && !found_death {
-            world
-                .write_model_test(
-                    @GameSession { game_id: gid, player: caller, is_active: true },
-                );
+            world.write_model_test(@GameSession { game_id: gid, player: caller, is_active: true });
             world
                 .write_model_test(
                     @PlayerState {
@@ -1304,8 +1301,7 @@ mod tests {
                         can_move: true,
                     },
                 );
-            world
-                .write_model_test(@PlayerStats { game_id: gid, hp: 1, max_hp: MAX_HP, xp: 100 });
+            world.write_model_test(@PlayerStats { game_id: gid, hp: 1, max_hp: MAX_HP, xp: 100 });
             world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: gid });
 
             game.move(gid, Direction::East);
@@ -1320,7 +1316,7 @@ mod tests {
                 found_death = true;
             }
             gid += 1;
-        };
+        }
         assert(found_death, 'should find lethal encounter');
     }
 
@@ -1368,8 +1364,7 @@ mod tests {
 
         // Player 1: moves East from (0,0) to (1,0)
         let id1: u32 = 100;
-        world
-            .write_model_test(@GameSession { game_id: id1, player: caller, is_active: true });
+        world.write_model_test(@GameSession { game_id: id1, player: caller, is_active: true });
         world
             .write_model_test(
                 @PlayerState {
@@ -1379,7 +1374,10 @@ mod tests {
                     can_move: true,
                 },
             );
-        world.write_model_test(@PlayerStats { game_id: id1, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 });
+        world
+            .write_model_test(
+                @PlayerStats { game_id: id1, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 0, y: 0, game_id: id1 });
 
         game.move(id1, Direction::East);
@@ -1387,8 +1385,7 @@ mod tests {
 
         // Player 2: moves East from (5,5) to (6,5)
         let id2: u32 = 200;
-        world
-            .write_model_test(@GameSession { game_id: id2, player: caller, is_active: true });
+        world.write_model_test(@GameSession { game_id: id2, player: caller, is_active: true });
         world
             .write_model_test(
                 @PlayerState {
@@ -1398,13 +1395,17 @@ mod tests {
                     can_move: true,
                 },
             );
-        world.write_model_test(@PlayerStats { game_id: id2, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 });
+        world
+            .write_model_test(
+                @PlayerStats { game_id: id2, hp: STARTING_HP, max_hp: MAX_HP, xp: 0 },
+            );
         world.write_model_test(@TileOccupant { x: 5, y: 5, game_id: id2 });
 
         game.move(id2, Direction::East);
         let s2: PlayerStats = world.read_model(id2);
 
-        // Different game_ids + different positions → different Poseidon seeds → different outcomes.
+        // Different game_ids + different positions → different Poseidon seeds → different
+        // outcomes.
         // At least one stat should differ between the two players' results.
         let hp_diff = s1.hp != s2.hp;
         let max_hp_diff = s1.max_hp != s2.max_hp;

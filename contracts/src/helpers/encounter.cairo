@@ -112,9 +112,7 @@ pub fn apply_encounter(ref stats: PlayerStats, outcome: EncounterOutcome) -> boo
             stats.max_hp += FORTIFY_MAX_HP_AMOUNT;
             stats.hp += FORTIFY_HP_AMOUNT;
         },
-        EncounterOutcome::Empower => {
-            add_xp(ref stats, EMPOWER_XP_AMOUNT);
-        },
+        EncounterOutcome::Empower => { add_xp(ref stats, EMPOWER_XP_AMOUNT); },
         EncounterOutcome::Blessing => {
             stats.max_hp += BLESSING_MAX_HP_AMOUNT;
             let headroom = stats.max_hp - stats.hp;
@@ -231,9 +229,9 @@ pub fn resolve_encounter(
 mod tests {
     use untitled::models::{
         BLESSING_HP_AMOUNT, BLESSING_MAX_HP_AMOUNT, BLESSING_XP_AMOUNT, DRAIN_XP_AMOUNT,
-        EMPOWER_XP_AMOUNT, EXPLORE_XP_REWARD, FORTIFY_HP_AMOUNT, FORTIFY_MAX_HP_AMOUNT,
-        HEAL_AMOUNT, HEX_HP_AMOUNT, HEX_MAX_HP_AMOUNT, HEX_XP_AMOUNT, MAX_HP, MIN_MAX_HP,
-        POISON_DAMAGE, PlayerStats, STARTING_HP, WITHER_MAX_HP_AMOUNT,
+        EMPOWER_XP_AMOUNT, EXPLORE_XP_REWARD, FORTIFY_HP_AMOUNT, FORTIFY_MAX_HP_AMOUNT, HEAL_AMOUNT,
+        HEX_HP_AMOUNT, HEX_MAX_HP_AMOUNT, HEX_XP_AMOUNT, MAX_HP, MIN_MAX_HP, POISON_DAMAGE,
+        PlayerStats, STARTING_HP, WITHER_MAX_HP_AMOUNT,
     };
     use super::{EncounterOutcome, EncounterOutcomeTrait, apply_encounter, determine_outcome};
 
@@ -556,9 +554,7 @@ mod tests {
     fn test_hp_never_exceeds_max_hp_after_gift() {
         // Test all gift outcomes at various HP levels
         let outcomes = array![
-            EncounterOutcome::Heal,
-            EncounterOutcome::Fortify,
-            EncounterOutcome::Empower,
+            EncounterOutcome::Heal, EncounterOutcome::Fortify, EncounterOutcome::Empower,
             EncounterOutcome::Blessing,
         ];
         let hp_levels = array![1_u32, 50, 95, 100];
@@ -571,7 +567,7 @@ mod tests {
                 apply_encounter(ref stats, *outcomes.at(i));
                 assert(stats.hp <= stats.max_hp, 'hp must not exceed max');
                 j += 1;
-            };
+            }
             i += 1;
         }
     }
@@ -590,7 +586,7 @@ mod tests {
                 apply_encounter(ref stats, *outcomes.at(i));
                 assert(stats.max_hp >= MIN_MAX_HP, 'max_hp below floor');
                 j += 1;
-            };
+            }
             i += 1;
         }
     }
