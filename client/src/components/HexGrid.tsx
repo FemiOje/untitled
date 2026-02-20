@@ -281,12 +281,12 @@ export default function HexGrid({
     const hexes: HexPosition[] = [];
     for (
       let row = -Math.floor(height / 2);
-      row < Math.ceil(height / 2);
+      row <= Math.floor(height / 2);
       row++
     ) {
       for (
         let col = -Math.floor(width / 2);
-        col < Math.ceil(width / 2);
+        col <= Math.floor(width / 2);
         col++
       ) {
         hexes.push({ col, row });
