@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Typography, CircularProgress } from "@mui/material";
+import { Box, Button, Typography, CircularProgress, Link } from "@mui/material";
 import { useDeathXp, useDeathReason, useGameStore } from "../stores/gameStore";
 import { useController } from "../contexts/controller";
 import { useSystemCalls } from "../dojo/useSystemCalls";
@@ -131,6 +131,15 @@ export default function DeathPage() {
         <Box sx={styles.leaderboardSection}>
           <HighestScoreDisplay />
         </Box>
+
+        <Link
+          href="https://archive.org/details/darkambient_201908"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={styles.musicCredit}
+        >
+          Music: "Dark Ambient Music and Textures" by DDmyzik
+        </Link>
       </Box>
     </Box>
   );
@@ -361,6 +370,17 @@ const styles = {
   buttonSpinner: {
     color: "rgba(59, 130, 246, 0.8)",
     marginRight: "4px",
+  },
+  musicCredit: {
+    marginTop: "16px",
+    fontSize: "0.6rem",
+    color: "rgba(255, 255, 255, 0.15)",
+    textDecoration: "none",
+    letterSpacing: "0.3px",
+    transition: "color 0.2s",
+    "&:hover": {
+      color: "rgba(255, 255, 255, 0.35)",
+    },
   },
   lobbyButton: {
     padding: "14px 40px",

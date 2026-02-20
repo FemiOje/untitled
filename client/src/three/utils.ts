@@ -67,12 +67,5 @@ export const getHexForWorldPosition = (worldPosition: { x: number; y: number; z:
     row: rr,
   };
 
-  console.log("🎯 getHexForWorldPosition:", {
-    worldPosition: { x: worldPosition.x, z: worldPosition.z },
-    fractional: { q: q.toFixed(2), r: r.toFixed(2), s: s.toFixed(2) },
-    rounded: result,
-    errors: { q_diff: q_diff.toFixed(3), r_diff: r_diff.toFixed(3), s_diff: s_diff.toFixed(3) }
-  });
-
   return result;
 };
