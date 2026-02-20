@@ -24,6 +24,7 @@ function WalletConnect() {
           sx={{
             minWidth: '100px',
             borderRadius: 0,
+            borderWidth: '2px',
             borderColor: 'rgba(0, 212, 255, 0.3)',
             color: 'rgba(0, 212, 255, 0.9)',
             letterSpacing: '2px',
@@ -50,6 +51,7 @@ function WalletConnect() {
           sx={{
             minWidth: '100px',
             borderRadius: 0,
+            borderWidth: '2px',
             borderColor: 'rgba(0, 212, 255, 0.3)',
             color: 'rgba(0, 212, 255, 0.9)',
             letterSpacing: '2px',

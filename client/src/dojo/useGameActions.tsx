@@ -337,7 +337,7 @@ export const useGameActions = () => {
                 </div>
               </div>
             ),
-            { duration: 2500 }
+            { duration: 4500, position: "bottom-center" }
           );
 
           // Toast 2: Encounter toast (if encounter event was received)
@@ -368,7 +368,7 @@ export const useGameActions = () => {
                     </div>
                   </div>
                 ),
-                { duration: 3000 }
+                { duration: 4500 }
               );
             }, 400);
           }

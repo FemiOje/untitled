@@ -100,35 +100,37 @@ export default function DeathPage() {
 
         <Box sx={styles.divider} />
 
+        <Box sx={styles.buttonsContainer}>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={handleRegisterScore}
+            disabled={isRegisteringScore}
+            sx={styles.registerScoreButton}
+          >
+            {isRegisteringScore ? (
+              <>
+                <CircularProgress size={20} sx={styles.buttonSpinner} />
+                Registering...
+              </>
+            ) : (
+              "Register Score"
+            )}
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={handleBackToLobby}
+            sx={styles.lobbyButton}
+          >
+            Return to Lobby
+          </Button>
+        </Box>
+
         <Box sx={styles.leaderboardSection}>
           <HighestScoreDisplay />
         </Box>
-
-        <Button
-          variant="outlined"
-          size="large"
-          onClick={handleRegisterScore}
-          disabled={isRegisteringScore}
-          sx={styles.registerScoreButton}
-        >
-          {isRegisteringScore ? (
-            <>
-              <CircularProgress size={20} sx={styles.buttonSpinner} />
-              Registering...
-            </>
-          ) : (
-            "Register Score"
-          )}
-        </Button>
-
-        <Button
-          variant="outlined"
-          size="large"
-          onClick={handleBackToLobby}
-          sx={styles.lobbyButton}
-        >
-          Return to Lobby
-        </Button>
       </Box>
     </Box>
   );
@@ -319,12 +321,19 @@ const styles = {
     color: "rgba(255, 255, 255, 0.4)",
     letterSpacing: "2px",
   },
+  buttonsContainer: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    gap: "12px",
+    marginTop: "12px",
+  },
   leaderboardSection: {
     width: "100%",
     maxWidth: "350px",
+    marginTop: "24px",
   },
   registerScoreButton: {
-    marginTop: "12px",
     padding: "14px 40px",
     fontSize: "0.85rem",
     fontWeight: 600,
@@ -354,7 +363,6 @@ const styles = {
     marginRight: "4px",
   },
   lobbyButton: {
-    marginTop: "8px",
     padding: "14px 40px",
     fontSize: "0.85rem",
     fontWeight: 600,

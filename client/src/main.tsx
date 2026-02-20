@@ -28,7 +28,7 @@ function DojoApp() {
             worldAddress: currentNetworkConfig.manifest.world.address,
           },
           domain: {
-            name: "Hexed",
+            name: "Hex'd",
             version: "1.0",
             chainId: currentNetworkConfig.chainId,
             revision: "1",

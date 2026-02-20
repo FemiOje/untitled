@@ -48,7 +48,7 @@ export default function StartPage() {
                 </IconButton>
 
                 <Box sx={styles.titleContainer}>
-                    <Typography sx={styles.title}>HEXED</Typography>
+                    <Typography sx={styles.title}>HEX'D</Typography>
                     <Box sx={styles.titleGlow} />
                 </Box>
 
@@ -105,13 +105,10 @@ const styles = {
         top: { xs: "16px", sm: "24px" },
         right: { xs: "16px", sm: "24px" },
         color: "rgba(0, 212, 255, 0.6)",
-        border: "1px solid rgba(0, 212, 255, 0.3)",
-        borderRadius: 0,
         padding: "8px",
         transition: "all 0.2s",
         "&:hover": {
             color: "#00d4ff",
-            borderColor: "rgba(0, 212, 255, 0.6)",
             backgroundColor: "rgba(0, 212, 255, 0.1)",
         },
     },

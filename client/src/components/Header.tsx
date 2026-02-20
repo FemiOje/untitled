@@ -10,7 +10,7 @@ function Header() {
     <Box sx={styles.header}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-          Hexed
+          Hex'd
         </Typography>
       </Box>
 
@@ -51,12 +51,9 @@ const styles = {
   },
   helpButton: {
     color: 'rgba(0, 212, 255, 0.7)',
-    border: '1px solid rgba(0, 212, 255, 0.3)',
-    borderRadius: 0,
     transition: 'all 0.2s',
     '&:hover': {
       color: '#00d4ff',
-      borderColor: 'rgba(0, 212, 255, 0.6)',
       backgroundColor: 'rgba(0, 212, 255, 0.1)',
     }
   }
