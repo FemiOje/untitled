@@ -9,6 +9,7 @@ import {
   Swords,
   Heart,
   Trophy,
+  Music,
   X,
 } from "lucide-react";
 import { useUIStore } from "../stores/uiStore";
@@ -73,6 +74,17 @@ const tutorialSections: TutorialSection[] = [
     title: "Death & Glory",
     description:
       "Reach 0 HP and your game ends. Your final XP is your score. Register it to claim your spot on the leaderboard!",
+  },
+  {
+    icon: Music,
+    title: "Music Credits",
+    description:
+      'All music from "Dark Ambient Music and Textures" by DDmyzik, available at archive.org/details/darkambient_201908.',
+    details: [
+      'Intro: "Crime"',
+      'Gameplay: "Documentary Dark", "Universal Pain"',
+      'Game Over: "Gloomy"',
+    ],
   },
 ];
 

@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import "./App.css";
 import { ControllerProvider } from "./contexts/controller";
 import { GameDirectorProvider } from "./contexts/GameDirector";
+import { SoundProvider } from "./contexts/Sound";
 import StartPage from "./pages/StartPage";
 import GamePage from "./pages/GamePage";
 import HowToPlayModal from "./components/HowToPlayModal";
@@ -25,6 +26,7 @@ function App() {
         <BrowserRouter>
             <ThemeProvider theme={theme}>
                 <ControllerProvider>
+                    <SoundProvider>
                     <GameDirectorProvider>
                         <Toaster
                             position="top-center"
@@ -45,6 +47,7 @@ function App() {
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </GameDirectorProvider>
+                    </SoundProvider>
                 </ControllerProvider>
             </ThemeProvider>
         </BrowserRouter>

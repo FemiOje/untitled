@@ -1,10 +1,10 @@
 import WalletConnect from "./WalletConnect";
 import { Box, Typography, IconButton } from '@mui/material';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Volume2, VolumeX } from 'lucide-react';
 import { useUIStore } from '../stores/uiStore';
 
 function Header() {
-  const { setShowHelpModal } = useUIStore();
+  const { setShowHelpModal, musicEnabled, toggleMusic } = useUIStore();
 
   return (
     <Box sx={styles.header}>
@@ -15,6 +15,14 @@ function Header() {
       </Box>
 
       <Box sx={styles.headerButtons}>
+        <IconButton
+          onClick={toggleMusic}
+          sx={styles.helpButton}
+          size="small"
+          aria-label={musicEnabled ? 'Mute music' : 'Play music'}
+        >
+          {musicEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+        </IconButton>
         <IconButton
           onClick={() => setShowHelpModal(true)}
           sx={styles.helpButton}

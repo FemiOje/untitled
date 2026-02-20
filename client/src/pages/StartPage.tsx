@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Box, Typography, IconButton } from "@mui/material";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, Volume2, VolumeX } from "lucide-react";
 import { useController } from "../contexts/controller";
 import WalletConnect from "../components/WalletConnect";
 import MyGames from "../components/MyGames";
@@ -9,7 +9,7 @@ import { useUIStore } from "../stores/uiStore";
 
 export default function StartPage() {
     const { address } = useController();
-    const { setShowHelpModal } = useUIStore();
+    const { setShowHelpModal, musicEnabled, toggleMusic } = useUIStore();
 
     // Show tutorial on first visit
     useEffect(() => {
@@ -39,14 +39,23 @@ export default function StartPage() {
 
             {/* Content */}
             <Box sx={styles.content}>
-                {/* Help button */}
-                <IconButton
-                    onClick={() => setShowHelpModal(true)}
-                    sx={styles.helpButton}
-                    aria-label="How to play"
-                >
-                    <HelpCircle size={24} />
-                </IconButton>
+                {/* Top-right buttons */}
+                <Box sx={styles.topRightButtons}>
+                    <IconButton
+                        onClick={toggleMusic}
+                        sx={styles.iconButton}
+                        aria-label={musicEnabled ? "Mute music" : "Play music"}
+                    >
+                        {musicEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
+                    </IconButton>
+                    <IconButton
+                        onClick={() => setShowHelpModal(true)}
+                        sx={styles.iconButton}
+                        aria-label="How to play"
+                    >
+                        <HelpCircle size={24} />
+                    </IconButton>
+                </Box>
 
                 <Box sx={styles.titleContainer}>
                     <Typography sx={styles.title}>HEX'D</Typography>
@@ -82,7 +91,35 @@ export default function StartPage() {
                 </Box>
 
                 <Typography sx={styles.footer}>
-                    Powered by Dojo Engine · Built on Starknet
+                    Powered by{" "}
+                    <Typography
+                        component="a"
+                        href="https://www.dojoengine.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={styles.footerLink}
+                    >
+                        Dojo Engine
+                    </Typography>
+                    {" · Built on "}
+                    <Typography
+                        component="a"
+                        href="https://www.starknet.io"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={styles.footerLink}
+                    >
+                        Starknet
+                    </Typography>
+                </Typography>
+                <Typography
+                    component="a"
+                    href="https://archive.org/details/darkambient_201908"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={styles.musicCredit}
+                >
+                    Music: "Dark Ambient Music and Textures" by DDmyzik
                 </Typography>
             </Box>
         </Box>
@@ -101,10 +138,15 @@ const styles = {
         justifyContent: "center",
         overflow: "hidden",
     },
-    helpButton: {
+    topRightButtons: {
         position: "absolute" as const,
         top: { xs: "16px", sm: "24px" },
         right: { xs: "16px", sm: "24px" },
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+    },
+    iconButton: {
         color: "rgba(68, 204, 68, 0.6)",
         padding: "8px",
         transition: "all 0.2s",
@@ -231,10 +273,12 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "20px",
-        padding: { xs: "24px", sm: "48px" },
+        gap: { xs: "10px", sm: "14px" },
+        padding: { xs: "16px", sm: "32px" },
         maxWidth: "600px",
         width: "100%",
+        maxHeight: "100dvh",
+        boxSizing: "border-box",
         animation: "fadeIn 0.6s ease-out",
         "@keyframes fadeIn": {
             "0%": { opacity: 0, transform: "translateY(16px)" },
@@ -243,7 +287,7 @@ const styles = {
     },
     titleContainer: {
         position: "relative",
-        marginBottom: "4px",
+        marginBottom: "0px",
     },
     title: {
         fontSize: { xs: "3.5rem", sm: "5.5rem", md: "6.5rem" },
@@ -295,19 +339,13 @@ const styles = {
         width: "80px",
         height: "1px",
         background: "rgba(255, 255, 255, 0.12)",
-        marginTop: "8px",
-        marginBottom: "8px",
     },
     walletSection: {
-        marginTop: "4px",
-        marginBottom: "4px",
     },
     gamesSection: {
-        marginTop: "8px",
         width: "100%",
     },
     leaderboardSection: {
-        marginTop: "24px",
         width: "100%",
         maxWidth: "400px",
     },
@@ -318,10 +356,33 @@ const styles = {
         letterSpacing: "0.5px",
     },
     footer: {
-        marginTop: "32px",
-        fontSize: "0.7rem",
-        color: "rgba(255, 255, 255, 0.2)",
+        marginTop: "auto",
+        fontSize: "0.8rem",
+        color: "rgba(255, 255, 255, 0.5)",
         textAlign: "center",
         letterSpacing: "0.5px",
+    },
+    footerLink: {
+        display: "inline",
+        fontSize: "inherit",
+        letterSpacing: "inherit",
+        fontWeight: 600,
+        color: "#2dee2d",
+        textDecoration: "none",
+        transition: "color 0.2s",
+        "&:hover": {
+            color: "#44cc44",
+        },
+    },
+    musicCredit: {
+        fontSize: "0.8rem",
+        color: "#2dee2d",
+        textAlign: "center",
+        letterSpacing: "0.5px",
+        textDecoration: "none",
+        transition: "color 0.2s",
+        "&:hover": {
+            color: "#44cc44",
+        },
     },
 };
