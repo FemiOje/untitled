@@ -68,7 +68,7 @@ export const useGameActions = () => {
    */
   const handleSpawn = useCallback(async () => {
     if (!address) {
-      toast.error("No wallet connected");
+      toast.error("No account connected");
       return;
     }
 
@@ -157,7 +157,7 @@ export const useGameActions = () => {
   const handleMove = useCallback(
     async (direction: Direction) => {
       if (!address) {
-        toast.error("No wallet connected");
+        toast.error("No account connected");
         return;
       }
 

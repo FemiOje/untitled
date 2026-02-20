@@ -47,7 +47,7 @@ export default function StartPage() {
                     </Box>
                 ) : (
                     <Typography sx={styles.connectPrompt}>
-                        Connect wallet to enter the arena
+                        Log in to enter the arena
                     </Typography>
                 )}
 
