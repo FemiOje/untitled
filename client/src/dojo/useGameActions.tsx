@@ -29,9 +29,9 @@ function formatEncounterText(event: GameEvent): string {
     case EncounterOutcome.Poison:
       return "POISON!! -15 HP";
     case EncounterOutcome.Drain:
-      return "DRAIN!! -5 XP";
+      return "DRAIN!! -10 XP";
     case EncounterOutcome.Hex:
-      return "HEX!! -10 HP, -5 XP";
+      return "HEX!! -10 HP, -10 XP";
     default:
       return "Unknown encounter";
   }
@@ -266,9 +266,14 @@ export const useGameActions = () => {
 
         // --- Toast logic ---
         if (moveOutcome === "combat_won" || moveOutcome === "combat_lost") {
-          // Combat: single toast (keep existing style)
-          const combatTitle = moveOutcome === "combat_won" ? "Won combat!" : "Lost combat!";
-          const combatColor = moveOutcome === "combat_won" ? "#4caf50" : "#f44336";
+          const won = moveOutcome === "combat_won";
+          const combatTitle = won ? "Won combat!" : "Lost combat!";
+          const combatColor = won ? "#4caf50" : "#f44336";
+          // When attacker wins: dealt 10 dmg to defender, healed +10 HP
+          // When attacker loses: took 10 dmg, defender took 5 retaliation
+          const opponentNote = won
+            ? "Dealt 10 damage, healed +10 HP"
+            : "Opponent took 5 retaliation damage";
           toast.custom(
             (t) => (
               <div
@@ -298,6 +303,9 @@ export const useGameActions = () => {
                     {hpDelta > 0 ? "+" : ""}{hpDelta} HP
                   </div>
                 )}
+                <div style={{ color: "#aaa", fontSize: 11, marginTop: 4 }}>
+                  {opponentNote}
+                </div>
               </div>
             ),
             { duration: 3000 }
