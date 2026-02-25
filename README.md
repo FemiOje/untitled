@@ -1,25 +1,30 @@
-# Untitled
+# Hex'd
 
 > A fully onchain asynchronous battle royale with fog of war, built with Cairo and Dojo
 
 [![Cairo](https://img.shields.io/badge/Cairo-2.15.0-orange.svg)](https://www.cairo-lang.org/)
 [![Dojo](https://img.shields.io/badge/Dojo-1.8.0-red.svg)](https://www.dojoengine.org/)
-[![Starknet](https://img.shields.io/badge/Starknet-Testnet-purple.svg)](https://www.starknet.io/)
+[![Starknet](https://img.shields.io/badge/Starknet-Sepolia-purple.svg)](https://www.starknet.io/)
 
 ## Overview
 
-**Untitled** is a multiplayer strategy game where players navigate a hexagonal grid shrouded in fog of war. Every step to an empty tile triggers a random encounter — a gift that strengthens you or a curse that may kill you. Walk into another player's tile and combat is resolved automatically based on XP. You can ambush offline players, and every decision is a gamble between exploration and survival.
+**Hex'd** is a multiplayer strategy game where players navigate a hexagonal grid shrouded in fog of war. Every step to an empty tile triggers a random encounter — a gift that strengthens you or a curse that may kill you. Walk into another player's tile and combat is resolved automatically based on XP. You can ambush offline players, and every decision is a gamble between exploration and survival.
 
-All game logic, state, and randomness live fully onchain on Starknet via the Dojo game engine.
+All game logic, state, and randomness live fully onchain on Starknet via the Dojo game engine. The frontend is a fully playable 3D experience built with React and Three.js.
 
 ### What's Implemented
 
 - **21x21 Hex Grid**: Axial coordinate system with bounds checking
+- **3D Frontend**: Playable Three.js hex grid with camera controls, fog of war, and mobile support
 - **Fog of War**: 6-bit neighbor bitmask reveals adjacent occupancy after each move
 - **Asynchronous PvP Combat**: XP-based resolution, attack offline players
-- **Gift/Curse Encounter System**: 8 distinct outcomes on every empty-tile move (65% gift, 35% curse)
+- **Gift/Curse Encounter System**: 6 distinct outcomes on every empty-tile move (50% gift, 50% curse)
 - **Deterministic RNG**: Poseidon hash from game state, fully verifiable onchain
-- **Event-Driven Architecture**: 6 event types for frontend reactivity
+- **Leaderboard**: Highest score tracking with onchain registration
+- **Game Counter**: Tracks active concurrent games (max 350)
+- **Event-Driven Architecture**: 7 event types for frontend reactivity
+- **Wallet Integration**: Cartridge Controller for seamless onchain interaction
+- **Idle Attack Detection**: Polling detects combat while player is away
 
 ## Quick Start
 
@@ -33,7 +38,7 @@ All game logic, state, and randomness live fully onchain on Starknet via the Doj
 ```bash
 cd contracts
 sozo build       # Compile Cairo contracts
-sozo test        # Run all 81 tests
+sozo test        # Run all 75 tests
 ```
 
 ### Run Locally
@@ -55,28 +60,69 @@ pnpm install
 pnpm run dev
 ```
 
+### Scarb Scripts
+
+```bash
+cd contracts
+scarb run migrate-dev     # Full build + test + deploy (local)
+scarb run migrate         # Full build + test + deploy (Sepolia)
+scarb run spawn-dev       # Execute spawn on local
+scarb run move-dev        # Execute move on local
+```
+
 ## How to Play
 
-1. **Spawn**: Call `spawn()` to create a new game session. You get placed at a random position on the hex grid with 100 HP and 0 XP.
-2. **Move**: Call `move(game_id, direction)` with one of 6 directions (East, NorthEast, NorthWest, West, SouthWest, SouthEast).
-3. **Encounter or Fight**:
-   - **Empty tile**: An encounter triggers automatically. You receive a gift (65% chance) or curse (35% chance) that modifies your HP or XP.
-   - **Occupied tile**: Combat resolves automatically. The player with higher XP wins. The loser takes 10 damage and the winner gains 30 XP.
-4. **Survive**: Curses like Poison (-15 HP) or Hex (-10 HP, -5 XP) can kill you. Combat losses stack up. Death ends your game session.
-5. **Scout**: After each action, you receive a bitmask showing which of your 6 neighboring tiles are occupied — plan your route accordingly.
+### Getting Started
 
-### Encounter Outcomes
+1. **Connect Wallet**: Open the game and connect your Starknet wallet via Cartridge Controller.
+2. **Start Game**: Click "Start Game" to spawn on the hex grid. You get placed at a random position with 100 HP, 110 max HP, and 0 XP.
+3. **Navigate**: Click an adjacent hex tile to select your direction, then click again to confirm. You can move in 6 directions: East, NorthEast, NorthWest, West, SouthWest, SouthEast.
 
-| Type | Outcome | Effect |
-|------|---------|--------|
-| Gift (65%) | **Heal** (40%) | +20 HP, capped at max |
-| | **Empower** (35%) | +25 XP |
-| | **Blessing** (25%) | +10 HP, +15 XP |
-| Curse (35%) | **Poison** (40%) | -15 HP (can kill) |
-| | **Drain** (40%) | -5 XP (floor: 0) |
-| | **Hex** (20%) | -10 HP, -5 XP (can kill) |
+### On Each Move
 
-Max HP is fixed at 110 and never changes. The encounter system has a net-positive expected value, rewarding exploration while keeping risk present.
+- **Empty tile**: You earn +10 XP for exploring, then an encounter triggers automatically. You receive a gift (50% chance) or curse (50% chance) that modifies your HP or XP.
+- **Occupied tile**: Combat resolves automatically. The player with higher XP wins. Equal XP favors the attacker.
+
+### Combat
+
+| Outcome | Attacker | Defender |
+|---------|----------|----------|
+| **Attacker wins** | +30 XP, +10 HP, moves to defender's tile | -10 HP, pushed to attacker's old tile |
+| **Defender wins** | -10 HP, stays put | -5 HP (retaliation), stays put |
+
+If either player's HP reaches 0, they die. Their game session ends and their tile is cleared.
+
+### Encounters
+
+When you move to an empty tile, a deterministic encounter is rolled based on your position and the block timestamp.
+
+| Type | Outcome | Effect | Chance |
+|------|---------|--------|--------|
+| Gift (50%) | **Heal** | +10 HP (capped at max) | 30% of gifts |
+| | **Empower** | +20 XP | 45% of gifts |
+| | **Blessing** | +5 HP, +10 XP | 25% of gifts |
+| Curse (50%) | **Poison** | -15 HP (can kill) | 40% of curses |
+| | **Drain** | -10 XP (floor: 0) | 25% of curses |
+| | **Hex** | -10 HP, -10 XP (can kill) | 35% of curses |
+
+Max HP is fixed at 110 and never changes. Exploration awards +10 XP per move regardless of the encounter outcome.
+
+### Fog of War
+
+After each move or spawn, you receive a bitmask showing which of your 6 neighboring tiles are occupied. Occupied neighbors appear red on the grid — plan your route accordingly.
+
+### Death and Scoring
+
+When your HP reaches 0 (from combat or a deadly encounter), your run ends. You can then:
+- **Register your score** to the onchain leaderboard (records your final XP)
+- **Return to the lobby** and start a new game
+
+### Tips
+
+- Red neighbors mean danger (or opportunity) — an occupied tile means combat.
+- Exploring builds XP, which determines combat outcomes. Move often.
+- Curses can kill you. If your HP is low, every move is a risk.
+- You can attack offline players. They can attack you while you're away too — check the toast notifications for ambush alerts.
 
 ## Architecture
 
@@ -86,18 +132,27 @@ contracts/src/
   lib.cairo                   # Module tree
   constants/constants.cairo   # Grid bounds, namespace
   systems/game/
-    contracts.cairo           # IGameSystems (spawn, move, get_game_state)
-    tests.cairo               # 46 integration tests
+    contracts.cairo           # IGameSystems (spawn, move, register_score, get_game_state, get_highest_score)
+    tests.cairo               # 37 integration tests
   helpers/
-    combat.cairo              # XP-based combat resolution
-    encounter.cairo           # Gift/curse system (35 unit tests)
+    combat.cairo              # XP-based combat resolution + death handling
+    encounter.cairo           # Gift/curse system (28 unit tests)
     movement.cairo            # Position + tile occupancy updates
     spawn.cairo               # Random spawn position
   utils/
-    hex.cairo                 # Axial hex math (neighbors, bounds, occupancy)
+    hex.cairo                 # Axial hex math (neighbors, bounds, occupancy) (7 unit tests)
     setup.cairo               # Test world deployment helper
 
 client/                       # React + TypeScript + Three.js frontend
+  src/
+    components/               # HexGrid, Header, MyGames, DeathPage, HowToPlayModal, etc.
+    contexts/                 # GameDirector, Sound, Controller
+    dojo/                     # useGameActions, useSystemCalls, useEntitySync
+    pages/                    # StartPage, GamePage
+    stores/                   # Zustand game state + UI state
+    three/                    # Three.js hex geometry, constants, coordinate utils
+    types/                    # TypeScript game interfaces
+    utils/                    # Event parsing, coordinate mapping, network config
 ```
 
 ### Models (Dojo ECS)
@@ -108,6 +163,18 @@ client/                       # React + TypeScript + Three.js frontend
 | `PlayerState` | `game_id` | Position (Vec2), last direction, movement flag |
 | `PlayerStats` | `game_id` | HP, max HP, XP |
 | `TileOccupant` | `(x, y)` | Which game_id occupies a tile (0 = empty) |
+| `GameCounter` | singleton (0) | Tracks number of active concurrent games |
+| `HighestScore` | singleton (0) | Leaderboard: player address, username, highest XP |
+
+### System Functions
+
+| Function | Description |
+|----------|-------------|
+| `spawn()` | Creates new game session, generates random position, initializes models, reveals neighbors |
+| `move(game_id, direction)` | Validates ownership/bounds, resolves combat OR movement+encounter, emits events |
+| `get_game_state(game_id)` | Read-only view returning full game state for a session |
+| `register_score(player, username, xp)` | Updates highest score if new XP exceeds current record |
+| `get_highest_score()` | Returns (player, username, xp) of the current leaderboard leader |
 
 ### Events
 
@@ -119,6 +186,7 @@ client/                       # React + TypeScript + Three.js frontend
 | `PlayerDied` | Player HP reached 0 (PvP or encounter) |
 | `NeighborsRevealed` | Fog of war update after move/spawn |
 | `EncounterOccurred` | Gift or curse applied after move |
+| `HighestScoreUpdated` | New highest score registered |
 
 ### Key Design Decisions
 
@@ -127,6 +195,22 @@ client/                       # React + TypeScript + Three.js frontend
 **Deterministic encounters**: Outcomes are derived from `poseidon_hash(game_id, x, y, block_timestamp)`. Same inputs always produce the same result, making the game fully verifiable.
 
 **ECS separation**: Spatial state (`PlayerState`) and combat state (`PlayerStats`) are separate models, following Dojo ECS best practices. `TileOccupant` provides efficient reverse lookups for collision and combat detection.
+
+**Game capacity**: `GameCounter` enforces a maximum of 350 concurrent games (~80% of the 441-tile grid), ensuring the grid never becomes fully saturated.
+
+### Constants
+
+```
+STARTING_HP = 100, MAX_HP = 110 (fixed)
+COMBAT_DAMAGE = 10, COMBAT_RETALIATION_DAMAGE = 5
+COMBAT_XP_REWARD = 30, COMBAT_HP_REWARD = 10
+EXPLORE_XP_REWARD = 10
+GIFT_THRESHOLD = 50 (50% gift, 50% curse)
+HEAL = +10 HP, EMPOWER = +20 XP, BLESSING = +5 HP / +10 XP
+POISON = -15 HP, DRAIN = -10 XP, HEX = -10 HP / -10 XP
+MIN_MAX_HP = 10, MAX_CONCURRENT_GAMES = 350
+Grid: GRID_MIN = -10, GRID_MAX = 10 (21x21)
+```
 
 ## Hex Grid
 
@@ -146,36 +230,70 @@ Uses **axial coordinates** `(q, r)` with pointy-top hexagons on a 21x21 grid (ra
 
 **Direction vectors**: E (+1,0), NE (+1,-1), NW (0,-1), W (-1,0), SW (-1,+1), SE (0,+1)
 
+## Frontend
+
+The client is a fully playable 3D game built with React, Three.js, and the Dojo SDK.
+
+### Tech Stack
+
+- **React 18** + TypeScript + Vite
+- **Three.js** via @react-three/fiber for 3D hex grid rendering
+- **Dojo SDK** + Starknet.js for contract interaction
+- **Cartridge Controller** for wallet integration
+- **Zustand** for client state management
+- **Material UI** + Tailwind CSS for UI components
+
+### Features
+
+- **3D Hex Grid**: Instanced mesh rendering with procedural biome coloring and fog-of-war opacity
+- **Camera Controls**: Orbit controls with smooth tracking to player position
+- **Move Confirmation**: Click-to-select, click-again-to-confirm pattern prevents misclicks
+- **Combat Indicators**: Occupied neighbor tiles shown in red
+- **Toast Notifications**: Real-time feedback for moves, encounters, combat, and ambush alerts
+- **Death Screen**: Game over page with final XP score and leaderboard registration
+- **Game Persistence**: Active game saved to localStorage for resume across sessions
+- **Idle Attack Detection**: Polling detects HP/position changes while player is away
+- **Mobile Support**: Responsive camera and touch-friendly double-tap movement
+- **Background Music**: Toggle-able ambient soundtrack
+
 ## Testing
 
-81 tests total, all passing:
+75 tests total, all passing:
 
-- **35 unit tests** in `helpers/encounter.cairo`: Pure function tests for `determine_outcome()` and `apply_encounter()` covering all 8 outcomes, boundary values, death conditions, and stat invariants.
-- **46 integration tests** in `systems/game/tests.cairo`: Full world deployment tests covering spawn, movement, combat, encounter integration, player death, tile occupancy, neighbor revelation, and edge cases.
+- **3 unit tests** in `models.cairo`: Vec2 equality, zero check, HP constant validation
+- **7 unit tests** in `utils/hex.cairo`: All 6 movement directions + boundary validation
+- **28 unit tests** in `helpers/encounter.cairo`: Outcome determination, encounter application for all 6 outcomes, boundary values, death conditions, stat invariants
+- **37 integration tests** in `systems/game/tests.cairo`: Full world deployment tests covering spawn, movement, combat, encounter integration, player death, tile occupancy, neighbor revelation, game counter, and edge cases
 
 ```bash
 cd contracts
-sozo test    # Runs all 81 tests
+sozo test    # Runs all 75 tests
 ```
 
 ## Roadmap
 
 ### Completed
-- [x] Core models (GameSession, PlayerState, PlayerStats, TileOccupant)
+- [x] Core models (GameSession, PlayerState, PlayerStats, TileOccupant, GameCounter, HighestScore)
 - [x] Hex grid movement with bounds checking
 - [x] XP-based asynchronous combat system
-- [x] Gift/curse encounter system (8 outcomes)
+- [x] Gift/curse encounter system (6 outcomes)
 - [x] Fog of war (neighbor occupancy bitmask)
 - [x] Deterministic Poseidon-based RNG
-- [x] Event-driven architecture (6 event types)
-- [x] Comprehensive test suite (81 tests)
+- [x] Event-driven architecture (7 event types)
+- [x] Comprehensive test suite (75 tests)
+- [x] Highest score leaderboard
 - [x] Game Design Document
+- [x] 3D frontend with Three.js hex grid
+- [x] Wallet integration (Cartridge Controller)
+- [x] Sepolia testnet deployment
+- [x] Idle attack detection and notifications
+- [x] Mobile-responsive design
 
 ### Planned
-- [ ] Scoring system and leaderboard
+- [ ] Full leaderboard with multiple entries and seasons
 - [ ] Stat distribution (STR/DEX/VIT/LUK)
 - [ ] Flee mechanic in combat
-- [ ] Frontend integration with Three.js hex grid
+- [ ] Scoring system with multi-factor formula
 - [ ] Balance tuning and gas optimization
 - [ ] Mainnet deployment
 
@@ -214,7 +332,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **GitHub**: [@FemiOje](https://github.com/FemiOje)
 **Email**: 0xjinius@gmail.com
 
-**Project Link**: [https://github.com/FemiOje/untitled](https://github.com/FemiOje/untitled)
+**Project Link**: [https://github.com/FemiOje/hexed](https://github.com/FemiOje/hexed)
 
 ---
 

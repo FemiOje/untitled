@@ -11,7 +11,7 @@ Fully onchain asynchronous battle royale with fog of war, built with Cairo/Dojo 
 ### Smart Contracts (`contracts/`)
 ```bash
 sozo build                # Build contracts
-sozo test                 # Run all 81 tests
+sozo test                 # Run all 75 tests
 sozo migrate              # Deploy to local Katana node
 ```
 
@@ -89,6 +89,8 @@ All models live in `contracts/src/models.cairo`:
 | `PlayerState` | `game_id` | `position`, `last_direction`, `can_move` | Spatial/movement state |
 | `PlayerStats` | `game_id` | `hp`, `max_hp`, `xp` | Combat and progression stats |
 | `TileOccupant` | `(x, y)` | `game_id` | Reverse lookup: who occupies a tile (0 = empty) |
+| `GameCounter` | singleton (0) | `active_games` | Tracks count of concurrent active games (max 350) |
+| `HighestScore` | singleton (0) | `player`, `username`, `xp` | Leaderboard: highest XP ever achieved |
 
 **View struct** (not a model): `GameState` - returned by `get_game_state()`, combines all model data + neighbor_occupancy.
 
@@ -101,6 +103,8 @@ Single contract: `game_systems` in namespace `untitled`.
 | `spawn()` | Creates new game session, generates random position, initializes models, reveals neighbors |
 | `move(game_id, direction)` | Validates ownership/bounds, resolves combat OR movement+encounter, emits events |
 | `get_game_state(game_id)` | Read-only view returning full game state for a session |
+| `register_score(player, username, xp)` | Updates HighestScore singleton if xp exceeds current record |
+| `get_highest_score()` | Returns (player, username, xp) of current leaderboard leader |
 
 ### Events
 
@@ -112,6 +116,7 @@ Single contract: `game_systems` in namespace `untitled`.
 | `PlayerDied` | `game_id` | Player dies (killed_by=0 for environment, >0 for PvP) |
 | `NeighborsRevealed` | `game_id` | Adjacent tile occupancy bitmask revealed |
 | `EncounterOccurred` | `game_id` | Gift/curse resolved on empty tile (includes outcome, stats after) |
+| `HighestScoreUpdated` | `player` | New highest score registered (includes username, xp) |
 
 ## Game Mechanics
 
@@ -151,11 +156,12 @@ Single contract: `game_systems` in namespace `untitled`.
 
 ### Constants (`models.cairo`)
 ```
-STARTING_HP = 100, MAX_HP = 110 (fixed, never changes)
+STARTING_HP = 100, MAX_HP = 110 (fixed, never changes), MIN_MAX_HP = 10
 COMBAT_DAMAGE = 10, COMBAT_RETALIATION_DAMAGE = 5, COMBAT_XP_REWARD = 30, COMBAT_HP_REWARD = 10, EXPLORE_XP_REWARD = 10
 GIFT_THRESHOLD = 50 (50% gift, 50% curse)
 HEAL = +10 HP, EMPOWER = +20 XP, BLESSING = +5 HP/+10 XP
 POISON = -15 HP, DRAIN = -10 XP, HEX = -10 HP/-10 XP
+MAX_CONCURRENT_GAMES = 350 (~80% of 441 grid tiles)
 ```
 
 Grid: `GRID_MIN = -10`, `GRID_MAX = 10` (in `constants/constants.cairo`)
@@ -169,9 +175,11 @@ Grid: `GRID_MIN = -10`, `GRID_MAX = 10` (in `constants/constants.cairo`)
 
 ## Testing
 
-81 total tests across two files:
-- `helpers/encounter.cairo`: 35 unit tests (pure function tests for all encounter outcomes, edge cases, invariants)
-- `systems/game/tests.cairo`: 46 integration tests (spawn, move, combat, encounter integration, death, tile occupancy)
+75 total tests across four files:
+- `models.cairo`: 3 unit tests (Vec2 equality, zero check, HP constants)
+- `utils/hex.cairo`: 7 unit tests (6 movement directions + boundary validation)
+- `helpers/encounter.cairo`: 28 unit tests (outcome determination, encounter application, all 6 outcomes, edge cases, invariants)
+- `systems/game/tests.cairo`: 37 integration tests (spawn, move, combat, encounter integration, death, tile occupancy, game counter)
 
 Tests use `utils/setup.cairo` which deploys a test world with all models and events registered.
 

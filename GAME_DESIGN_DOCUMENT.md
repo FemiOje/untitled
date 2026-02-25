@@ -1,12 +1,38 @@
-# Untitled - Game Design Document
+# Hex'd - Game Design Document
+
+> **Note**: This document describes the full aspirational game design. Not all features are implemented yet. Sections marked with **[IMPLEMENTED]** reflect the current state of the codebase. Sections marked with **[PLANNED]** describe features that are designed but not yet built. When in doubt, refer to the source code and [README.md](README.md) for the current implementation.
+
+## Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| 21x21 Hex Grid | **IMPLEMENTED** | Axial coordinates, bounds checking |
+| Movement (6 directions) | **IMPLEMENTED** | Async, no timer |
+| Fog of War | **IMPLEMENTED** | 6-bit neighbor occupancy bitmask |
+| XP-based Combat | **IMPLEMENTED** | Higher XP wins, ties favor attacker |
+| Gift/Curse Encounters | **IMPLEMENTED** | 50/50 split, 6 outcomes, deterministic RNG |
+| Leaderboard (Highest Score) | **IMPLEMENTED** | Single highest XP record |
+| Game Counter | **IMPLEMENTED** | Max 350 concurrent games |
+| 3D Frontend (Three.js) | **IMPLEMENTED** | Playable hex grid, camera controls, mobile support |
+| Wallet Integration | **IMPLEMENTED** | Cartridge Controller |
+| Event System | **IMPLEMENTED** | 7 event types |
+| Test Suite | **IMPLEMENTED** | 75 tests (unit + integration) |
+| Stat Distribution (STR/DEX/VIT/LUK) | PLANNED | Not yet implemented |
+| Flee Mechanic | PLANNED | Not yet implemented |
+| Scoring Formula | PLANNED | Currently uses raw XP |
+| Season-based Leaderboard | PLANNED | Currently single highest score |
+| Loot/Gold System | PLANNED | Not yet implemented |
+| Run Registration | PLANNED | Partial (register_score exists) |
+
+---
 
 ## Project Overview
 
 ### Title
-**Untitled** (working title)
+**Hex'd**
 
 ### High-Level Concept
-A fully onchain, asynchronous multiplayer battle royale game where players explore a fog-of-war hexagonal grid, engage in tactical combat with online and offline players, collect resources through random encounters, and compete for the highest score on a persistent leaderboard.
+A fully onchain, asynchronous multiplayer battle royale game where players explore a fog-of-war hexagonal grid, engage in tactical combat with online and offline players, encounter random gifts and curses, and compete for the highest score on the leaderboard.
 
 ### Purpose
 This is a portfolio/demonstration project showcasing:
@@ -27,7 +53,7 @@ This is a portfolio/demonstration project showcasing:
 ## Core Game Concept
 
 ### Elevator Pitch
-*"It's like Battleship meets Battle Royale with roguelike elements - navigate a hidden grid, encounter random events, ambush other players (even when they're offline), and compete for the highest score on the global leaderboard."*
+*"It's like Battleship meets Battle Royale with roguelike elements - navigate a hidden hex grid, encounter random gifts and curses, ambush other players (even when they're offline), and compete for the highest score on the leaderboard."*
 
 ### Core Gameplay Loop
 ```
@@ -55,32 +81,34 @@ This is a portfolio/demonstration project showcasing:
 
 ### 1. Grid System
 
-#### Hex Grid Structure
-- **Grid Size**: 10x10 hexagonal grid (100 total cells)
+#### Hex Grid Structure **[IMPLEMENTED]**
+- **Grid Size**: 21x21 hexagonal grid (441 total cells, range [-10, 10])
 - **Coordinate System**: Axial coordinates (q, r)
-- **Player Capacity**: Maximum 50 players simultaneously (sparse occupancy)
+- **Player Capacity**: Maximum 350 concurrent games (~80% of grid)
 - **Topology**: Bounded grid (edges are impassable)
 
-#### Movement
+#### Movement **[IMPLEMENTED]**
 - **Turns**: Asynchronous - players move at their own pace
 - **Movement Cost**: 1 action per move
-- **Valid Moves**: 6 adjacent hexes (NE, E, SE, SW, W, NW)
+- **Valid Moves**: 6 adjacent hexes (E, NE, NW, W, SW, SE)
 - **Turn Timer**: No strict timer; players can take as long as needed per move
-- **Collision**: Moving to an occupied hex triggers combat interaction
+- **Collision**: Moving to an occupied hex triggers automatic combat
+- **Exploration Bonus**: +10 XP awarded for each move to an empty tile
 
-#### Fog of War
-- **Visibility**: Players can only see:
-  - Their own position
-  - Hexes they've previously visited (dimmed)
-  - Immediate adjacent hexes (outline only, no player info)
+#### Fog of War **[IMPLEMENTED]**
+- **Visibility**: After each move/spawn, a 6-bit bitmask reveals which adjacent tiles are occupied
+  - Bit 0 = East, Bit 1 = NorthEast, ..., Bit 5 = SouthEast
+  - Occupied neighbors appear red on the 3D grid
 - **Hidden Information**:
-  - Other players' positions (unless you encounter them)
+  - Other players' exact positions (only neighbor occupancy revealed)
   - Other players' stats and HP
-  - Other players' loot amounts
+  - Whether a neighbor is a high-XP threat or an easy target
 
 ---
 
-### 2. Player Stats System
+### 2. Player Stats System **[PLANNED]**
+
+> **Current Implementation**: Players have HP (starting 100, max 110) and XP (starting 0). There are no distributable stats. Combat is resolved purely by XP comparison. The stat system below is the aspirational design for a future update.
 
 #### Core Stats (Loot Survivor 2 Style)
 Each player has 4 primary stats that determine combat effectiveness and survival:
@@ -115,6 +143,8 @@ Each player has 4 primary stats that determine combat effectiveness and survival
 ---
 
 ### 3. Combat System
+
+> **Current Implementation [IMPLEMENTED]**: Combat is XP-based with no player choice. Moving onto an occupied tile with an active defender triggers automatic combat. The player with higher XP wins (ties favor the attacker). Winner: +30 XP, +10 HP (capped at max). Loser: -10 HP. Defender takes -5 HP retaliation damage if they win. The fight/flee choice and stat-based combat described below are planned features.
 
 #### Combat Trigger
 Combat occurs when a player moves to a hex occupied by another player (online or offline).
@@ -219,9 +249,11 @@ else:
 
 When a player moves to an **empty hex**, they trigger a random encounter.
 
+> **Current Implementation [IMPLEMENTED]**: Encounters use deterministic Poseidon-based RNG with a 50/50 gift/curse split. There is no Luck stat influence. The 6 outcomes are: Heal (+10 HP), Empower (+20 XP), Blessing (+5 HP, +10 XP), Poison (-15 HP), Drain (-10 XP), Hex (-10 HP, -10 XP). Players also receive +10 XP exploration bonus per move. The Luck-influenced system and loot rewards below are planned features.
+
 #### Encounter Types
 
-**Distribution**:
+**Distribution (Planned)**:
 - **70% Gift** (beneficial)
 - **30% Danger** (harmful)
 
@@ -290,6 +322,8 @@ If Player HP < 30:
 
 ### 5. Death & Run System
 
+> **Current Implementation [IMPLEMENTED]**: When HP reaches 0, the game session is deactivated, the player is removed from the grid, and GameCounter is decremented. Players can register their final XP as a score to the HighestScore leaderboard. The detailed run statistics and season-based registration described below are planned features.
+
 #### Death Conditions
 - **HP reaches 0** (combat or danger)
 - Run immediately ends
@@ -337,7 +371,9 @@ Final Score: 8,450
 
 ---
 
-### 6. Scoring System
+### 6. Scoring System **[PLANNED]**
+
+> **Current Implementation**: Scoring is based purely on XP. The `register_score()` function records a player's XP to the `HighestScore` singleton if it exceeds the current record. The multi-factor scoring formula below is planned.
 
 #### Score Calculation Formula
 ```
@@ -372,7 +408,9 @@ Total Score = 5,185
 
 ---
 
-### 7. Leaderboard System
+### 7. Leaderboard System **[PARTIALLY IMPLEMENTED]**
+
+> **Current Implementation**: A `HighestScore` singleton model stores the player address, username, and XP of the all-time highest score. The frontend displays this on the start page and death screen. The full season-based leaderboard with multiple entries described below is planned.
 
 #### Structure
 - **Global Leaderboard**: All registered runs across all players
@@ -437,7 +475,32 @@ Season 2:
 
 ### Smart Contract Architecture
 
-#### Contract Structure
+#### Contract Structure (Actual)
+```
+contracts/
+├── src/
+│   ├── models.cairo              # All models, constants, enums in one file
+│   ├── lib.cairo                 # Module tree root
+│   ├── constants/
+│   │   └── constants.cairo       # Grid bounds, namespace
+│   ├── systems/game/
+│   │   ├── contracts.cairo       # IGameSystems (spawn, move, register_score, get_game_state, get_highest_score)
+│   │   └── tests.cairo           # 37 integration tests
+│   ├── helpers/
+│   │   ├── combat.cairo          # XP-based combat resolution + death handling
+│   │   ├── encounter.cairo       # Gift/curse system (28 unit tests)
+│   │   ├── movement.cairo        # Position + tile occupancy updates
+│   │   └── spawn.cairo           # Random spawn position generation
+│   └── utils/
+│       ├── hex.cairo             # Axial hex math (7 unit tests)
+│       └── setup.cairo           # Test world deployment helper
+├── Scarb.toml                    # Cairo 2.15.0, Dojo 1.8.0
+├── dojo_dev.toml                 # Local dev config
+├── dojo_sepolia.toml             # Sepolia testnet config
+└── dojo_slot.toml                # Slot deployment config
+```
+
+#### Contract Structure (Planned - from original GDD)
 ```
 contracts/
 ├── src/
@@ -701,29 +764,33 @@ struct NewLeader {
 
 ### Randomness Implementation
 
-**Approach**: Deterministic pseudo-randomness using block hash + player inputs
+> **Current Implementation [IMPLEMENTED]**: Uses Poseidon hash for deterministic RNG. Encounters use `poseidon_hash(game_id, position.x, position.y, block_timestamp)` to derive two rolls (encounter_roll and subtype_roll). Spawn position uses `timestamp + transaction_hash + player_address`. The Pedersen-based approach below was the original design; Poseidon is used in practice.
+
+**Approach**: Deterministic pseudo-randomness using Poseidon hash
 
 ```cairo
-fn get_random(seed: felt252, range: u32) -> u32 {
-    let block_hash = starknet::get_block_info().unbox().block_hash;
-    let hash = pedersen(pedersen(block_hash, seed), starknet::get_block_timestamp());
-    let random_felt: felt252 = hash.into();
-    let random_u256: u256 = random_felt.into();
-    (random_u256 % range.into()).try_into().unwrap()
+// Actual implementation (encounters)
+fn generate_rolls(game_id: u32, position: Vec2) -> (u8, u8) {
+    let timestamp = get_block_timestamp();
+    let hash = poseidon_hash(game_id, position.x, position.y, timestamp);
+    let encounter_roll = hash % 100;      // 0-99: gift vs curse
+    let subtype_roll = (hash / 100) % 100; // 0-99: specific outcome
 }
 
-// Usage
-let combat_roll = get_random(
-    pedersen(attacker.player_address.into(), defender.player_address.into()),
-    20
-) + 1; // 1-20
+// Actual implementation (spawn)
+fn generate_spawn_position(player: ContractAddress) -> Vec2 {
+    let seed = timestamp + transaction_hash + player_address;
+    let x = (seed % 21) + GRID_MIN;  // Range [-10, 10]
+    let y = ((seed / 21) % 21) + GRID_MIN;
+}
 ```
 
 **Seed Sources**:
-- Block hash (changes each block)
-- Player addresses (unique per combat)
-- Timestamp (changes over time)
-- Turn number (sequential)
+- Block timestamp (changes each block)
+- Game ID (unique per session)
+- Position coordinates (unique per tile)
+- Transaction hash (for spawn randomness)
+- Player address (for spawn randomness)
 
 ---
 
@@ -744,7 +811,7 @@ let combat_roll = get_random(
 
 #### 1. Onboarding (First-Time Player)
 ```
-Welcome to UNTITLED!
+Welcome to HEX'D!
 
 A fully onchain battle royale where you:
 • Explore a fog-of-war hex grid
@@ -1051,65 +1118,66 @@ Net EV: (0.7 × 120) - (0.3 × 70) = 84 - 21 = +63 value per tile
 
 ## Development Roadmap
 
-### Phase 1: Core Contracts (Week 1-2)
+### Phase 1: Core Contracts ✅
 **Goal**: Functional onchain game logic
 
-- [ ] Set up Dojo project structure
-- [ ] Implement Player model and spawning
-- [ ] Implement hex grid movement system
-- [ ] Implement basic combat (no flee yet)
-- [ ] Implement encounter system (gifts/dangers)
-- [ ] Write unit tests for core systems
+- [x] Set up Dojo project structure
+- [x] Implement Player model and spawning
+- [x] Implement hex grid movement system (21x21 axial grid)
+- [x] Implement basic combat (XP-based, no flee yet)
+- [x] Implement encounter system (gifts/curses, 6 outcomes)
+- [x] Write unit tests for core systems (75 tests)
 
 **Deliverable**: Testable smart contracts on local Katana node
 
 ---
 
-### Phase 2: Advanced Features (Week 3)
+### Phase 2: Advanced Features (Partial)
 **Goal**: Complete game mechanics
 
 - [ ] Implement flee mechanic
-- [ ] Implement stat modification (boosts/curses)
-- [ ] Implement scoring system
-- [ ] Implement leaderboard registration
+- [ ] Implement stat distribution (STR/DEX/VIT/LUK)
+- [x] Implement basic scoring (XP-based highest score)
+- [x] Implement leaderboard registration (HighestScore singleton)
 - [ ] Implement season management
-- [ ] Add event emissions for all actions
-- [ ] Write integration tests
+- [x] Add event emissions for all actions (7 event types)
+- [x] Write integration tests (37 integration tests)
 
 **Deliverable**: Feature-complete contracts deployed to testnet
 
 ---
 
-### Phase 3: Frontend (Week 4-5)
+### Phase 3: Frontend ✅
 **Goal**: Playable UI
 
-- [ ] Set up React + TypeScript project
-- [ ] Implement hex grid renderer (Phaser.js or CSS)
-- [ ] Implement wallet connection (Argent/Braavos)
-- [ ] Build character creation screen
-- [ ] Build movement interface
-- [ ] Build combat UI (fight/flee choice)
-- [ ] Build encounter notifications
-- [ ] Build death screen
-- [ ] Build leaderboard display
-- [ ] Implement event listener for onchain updates
+- [x] Set up React + TypeScript project (Vite)
+- [x] Implement hex grid renderer (Three.js 3D)
+- [x] Implement wallet connection (Cartridge Controller)
+- [ ] Build character creation screen (no stat distribution yet)
+- [x] Build movement interface (click-to-select, click-to-confirm)
+- [x] Build combat resolution (automatic, toast notifications)
+- [x] Build encounter notifications (toast with color coding)
+- [x] Build death screen (game over + score registration)
+- [x] Build leaderboard display (highest score)
+- [x] Implement event parsing from transaction receipts
 
 **Deliverable**: Fully playable web app
 
 ---
 
-### Phase 4: Polish & Launch (Week 6)
+### Phase 4: Polish & Launch (In Progress)
 **Goal**: Production-ready demo
 
 - [ ] Balance tuning (combat, encounters, scoring)
-- [ ] Add sound effects
+- [x] Add background music (ambient soundtrack)
 - [ ] Add animations (combat, movement, encounters)
 - [ ] Optimize contract gas usage
 - [ ] Security audit (basic)
-- [ ] Write comprehensive README
+- [x] Write comprehensive README
 - [ ] Record 2-minute demo video
-- [ ] Deploy to mainnet (optional)
-- [ ] Publish to portfolio/GitHub
+- [x] Deploy to Sepolia testnet
+- [ ] Deploy to mainnet
+- [x] Publish to GitHub
 
 **Deliverable**: Portfolio-ready project
 
@@ -1286,7 +1354,14 @@ A: Depends on your build! Tanks should fight, scouts should explore and flee, be
 
 ### Version History
 
-**v1.0** (Current) - Initial GDD
+**v1.1** (Current) - Updated with implementation status
+- Added implementation status table
+- Updated roadmap with completion markers
+- Noted actual vs planned features throughout
+- Updated technical architecture to match codebase
+- Fixed grid size (21x21, not 10x10)
+
+**v1.0** - Initial GDD
 - Core mechanics defined
 - Technical architecture specified
 - Development roadmap outlined
@@ -1297,7 +1372,7 @@ A: Depends on your build! Tanks should fight, scouts should explore and flee, be
 
 **Developer**: [FemiOje](https://github.com/FemiOje)
 
-**GitHub**:  [untitled](https://github.com/FemiOje/untitled)
+**GitHub**:  [hexed](https://github.com/FemiOje/hexed)
 
 **Demo**: [coming soon]
 
@@ -1310,4 +1385,4 @@ A: Depends on your build! Tanks should fight, scouts should explore and flee, be
 
 ---
 
-*Last Updated: January 27, 2026*
+*Last Updated: February 25, 2026*

@@ -42,26 +42,26 @@ const tutorialSections: TutorialSection[] = [
   },
   {
     icon: Gift,
-    title: "Gifts (65% chance)",
+    title: "Gifts (50% chance)",
     description:
-      "Moving to empty tiles triggers encounters. Most are gifts that help you:",
+      "Moving to empty tiles triggers encounters. Half are gifts that help you:",
     details: [
-      "Heal: +20 HP",
-      "Empower: +25 XP",
-      "Blessing: +10 HP, +15 XP",
+      "Heal: +10 HP",
+      "Empower: +20 XP",
+      "Blessing: +5 HP, +10 XP",
     ],
   },
   {
     icon: Skull,
-    title: "Curses (35% chance)",
-    description: "Some encounters are curses that harm you:",
-    details: ["Poison: -15 HP", "Drain: -5 XP", "Hex: -10 HP, -5 XP"],
+    title: "Curses (50% chance)",
+    description: "The other half are curses that harm you:",
+    details: ["Poison: -15 HP", "Drain: -10 XP", "Hex: -10 HP, -10 XP"],
   },
   {
     icon: Swords,
     title: "Combat",
     description:
-      "Move onto a red hex to attack that player. Higher XP wins the battle. Loser takes 10 damage, winner gains +30 XP. You can attack even offline players!",
+      "Move onto a red hex to attack that player. Higher XP wins the battle. Loser takes 10 damage. Winner gains +30 XP and +10 HP. You can attack even offline players!",
   },
   {
     icon: Heart,
